@@ -126,7 +126,7 @@ export function EventForm({
               ? "Crear evento"
               : "Guardar cambios"}
         </Button>
-        <span className="flex items-center gap-1.5 text-xs text-stone-500">
+        <span className="flex items-center gap-1.5 text-xs text-stone-400">
           <CalendarDays className="h-3.5 w-3.5" aria-hidden />
           Podrás importar la lista y crear códigos después.
         </span>
@@ -137,7 +137,7 @@ export function EventForm({
 
 export function EventDateHint() {
   return (
-    <p className="flex items-center gap-1.5 text-xs text-stone-500">
+    <p className="flex items-center gap-1.5 text-xs text-stone-400">
       <MapPin className="h-3.5 w-3.5" aria-hidden />
       La dirección ayuda a tu equipo a ubicar la puerta.
     </p>

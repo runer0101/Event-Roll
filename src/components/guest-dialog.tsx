@@ -96,16 +96,16 @@ export function GuestDialog({
           aria-modal="true"
           aria-labelledby="guest-title"
         >
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-stone-200 bg-white p-6 shadow-xl">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-stone-800 bg-stone-900 p-6 shadow-xl">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2
                   id="guest-title"
-                  className="text-lg font-semibold text-stone-900"
+                  className="text-lg font-semibold text-stone-50"
                 >
                   {isEdit ? "Editar invitado" : "Agregar invitado"}
                 </h2>
-                <p className="mt-1 text-sm text-stone-500">
+                <p className="mt-1 text-sm text-stone-400">
                   {isEdit
                     ? "Actualiza los datos del invitado."
                     : "Se generará un código de invitación automáticamente."}
@@ -114,7 +114,7 @@ export function GuestDialog({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-lg p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+                className="rounded-lg p-1 text-stone-500 hover:bg-stone-800 hover:text-stone-200"
                 aria-label="Cerrar"
               >
                 <X className="h-5 w-5" />

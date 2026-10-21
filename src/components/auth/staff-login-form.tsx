@@ -25,10 +25,10 @@ export function StaffLoginForm() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight text-stone-900">
+      <h1 className="text-2xl font-semibold tracking-tight text-stone-50">
         Entra con tu código
       </h1>
-      <p className="mt-1 text-sm text-stone-500">
+      <p className="mt-1 text-sm text-stone-400">
         Tu organizador te dio un código único para este evento. Escríbelo tal
         cual, sin espacios.
       </p>
@@ -64,9 +64,9 @@ export function StaffLoginForm() {
         </Button>
       </form>
 
-      <div className="mt-6 rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-600">
-        <p className="flex items-center gap-2 font-medium text-stone-800">
-          <KeyRound className="h-4 w-4 text-orange-600" aria-hidden />
+      <div className="mt-6 rounded-xl border border-stone-800 bg-stone-950 p-4 text-sm text-stone-300">
+        <p className="flex items-center gap-2 font-medium text-stone-100">
+          <KeyRound className="h-4 w-4 text-amber-300" aria-hidden />
           ¿No tienes código?
         </p>
         <p className="mt-1.5 leading-relaxed">
@@ -75,11 +75,11 @@ export function StaffLoginForm() {
         </p>
       </div>
 
-      <p className="mt-6 text-center text-sm text-stone-500">
+      <p className="mt-6 text-center text-sm text-stone-400">
         ¿Eres el organizador?{" "}
         <Link
           href="/login"
-          className="font-medium text-orange-700 hover:underline"
+          className="font-medium text-amber-300 hover:underline"
         >
           Entra a tu panel
         </Link>

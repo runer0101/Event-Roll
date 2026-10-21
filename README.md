@@ -1,6 +1,6 @@
 # Event-Roll
 
-**Guest list and live door control for event organizers.** Import the client's Excel, give every helper a unique code, and watch who enters — and who does not — in real time.
+**Guest list, seating and live door control for event organizers.** Import the client's Excel, give every team member a unique code, organize tables and the schedule, and watch who enters — and who does not — in real time.
 
 [![CI](https://github.com/runer0101/Event-Roll/actions/workflows/ci.yml/badge.svg)](https://github.com/runer0101/Event-Roll/actions/workflows/ci.yml)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
@@ -24,7 +24,9 @@ Event-Roll turns that into one live system:
 
 - **Excel/CSV import with preview** — reads `.xlsx` and `.csv`, maps Spanish/English headers, validates every row, reports problems and skips duplicates.
 - **Guest list management** — add, edit, search, filter and delete guests; each one gets a short code for quick lookup.
-- **Unique staff codes** — the organizer creates helpers and receives a code such as `STF-7K2M9Q4P`. No email invitations, no passwords for the door.
+- **Tables and chairs** — create tables with a set number of chairs, click a chair to mark it occupied (red), and the whole table turns red when it is full.
+- **Team roles** — door, coordination, kitchen, music, decoration or other. Every member gets a unique code and sees only their part of the event.
+- **Shared schedule** — tasks with a time, an assignee and a status; the organizer sees the full timeline and each member marks their tasks as done.
 - **Granular permissions** — contact data, guest editing, CSV export, undo check-in and live stats are toggles per helper, enforced on the server.
 - **Live dashboard** — tickets, pending guests, attendance rate, recent entries and staff activity refresh every 3 seconds.
 - **Atomic check-in** — a guest can only move `INVITED → CHECKED_IN` once, even if two guards tap at the same time. A rejected second attempt never creates a second entry.
@@ -37,25 +39,31 @@ Event-Roll turns that into one live system:
 
 | Role | Can do |
 | --- | --- |
-| **Organizer (root)** | Everything: events, guest list, import, staff, permissions, export, undo check-ins. |
+| **Organizer (root)** | Everything: events, guest list, import, tables, team, permissions, schedule, export, undo check-ins. |
 | **Coordinator** | Whatever the root grants: view contact data, edit guests, export, undo check-ins, see live stats. |
 | **Guard** | Enter with a code, search guests and mark entries. Contact data and editing are off by default. |
+| **Kitchen / music / decoration** | Enter with a code and see their own schedule, times and event information. No guest check-in by default. |
 
 ## How it works
 
 1. **Import the list.** Upload the client's Excel or CSV. The browser parses it, shows a preview and flags invalid or duplicated rows before anything is written.
 2. **Build the door team.** Create a helper, choose permissions and share the generated code.
 3. **Open the door.** The guard enters the code, finds the guest and marks the entry. The organizer's dashboard updates while the queue moves.
+4. **Prepare the room.** Create tables, mark chairs as occupied and assign timed tasks to the kitchen, music and decoration teams.
 
 ## Screenshots
 
 | Organizer dashboard | Live access feed |
 | --- | --- |
 | ![Dashboard](docs/screenshots/dashboard.png) | ![Live feed](docs/screenshots/live.png) |
-| **Guest list** | **Staff and permissions** |
-| ![Guests](docs/screenshots/guests.png) | ![Staff](docs/screenshots/staff.png) |
-| **Guard screen (mobile)** | **Landing** |
-| ![Guard](docs/screenshots/guard.png) | ![Landing](docs/screenshots/landing.png) |
+| **Guest list** | **Tables and chairs** |
+| ![Guests](docs/screenshots/guests.png) | ![Tables](docs/screenshots/tables.png) |
+| **Schedule** | **Staff and roles** |
+| ![Schedule](docs/screenshots/schedule.png) | ![Staff](docs/screenshots/staff.png) |
+| **Guard screen (mobile)** | **Kitchen schedule (mobile)** |
+| ![Guard](docs/screenshots/guard.png) | ![Kitchen](docs/screenshots/staff-cook.png) |
+| **Landing** | |
+| ![Landing](docs/screenshots/landing.png) | |
 
 ## Engineering highlights
 
@@ -64,6 +72,8 @@ Event-Roll turns that into one live system:
 - **Excel parsing happens before the write.** The browser produces a preview and row-level errors; the server validates the same rows again with Zod before `createMany`. Duplicates are detected by email, then phone + name, then name.
 - **Tenant isolation is explicit.** Owner queries use the session's `organizationId`; staff queries use both `organizationId` and `eventId`. A tampered ID returns "not found", not another tenant's data.
 - **Live without WebSocket infrastructure.** The dashboard polls a small, session-protected route every 3 seconds. It pauses while the tab is hidden and keeps the initial render server-side.
+- **Seat state is derived, never duplicated.** Every chair is a row; a table is full when all its chairs are occupied. The client updates the UI immediately (red chair, red table) and the server persists each click.
+- **The same login serves different roles.** `/staff/event/[id]` reads the member's `canCheckIn`: door and coordination see the check-in console; kitchen, music and decoration see their personal schedule.
 - **Codes are generated from an unambiguous alphabet** (`ABCDEFGHJKLMNPQRSTUVWXYZ23456789`) to avoid `O/0` and `I/1` mistakes at the door.
 
 ## Tech stack
@@ -83,16 +93,16 @@ Event-Roll turns that into one live system:
 
 ```
 prisma/
-├── schema.prisma          User · Organization · Event · Guest · Staff · AccessLog
+├── schema.prisma          User · Organization · Event · Guest · Staff · EventTable · Chair · ScheduleItem
 └── seed.ts                deterministic demo data
 src/
 ├── actions/               auth, events, guests, staff, check-in
 ├── app/
 │   ├── (auth)/            login · register
-│   ├── dashboard/         organizer panel (overview, guests, staff, settings)
+│   ├── dashboard/         organizer panel (overview, guests, tables, staff, schedule, settings)
 │   ├── staff/             code login + guard screen
 │   └── api/               live feed · CSV export · Auth.js
-├── components/            UI, live dashboard, import dialog, staff manager
+├── components/            UI, live dashboard, import dialog, seating board, schedule manager
 └── lib/
     ├── import/            browser Excel/CSV parsing
     ├── queries/           tenant-scoped reads
@@ -133,6 +143,9 @@ The seed recreates the demo organization on every run.
 | Organizer | `demo@event-roll.dev` / `event-roll-demo` |
 | Guard code | `STF-GUARD01` |
 | Coordinator code (full permissions) | `STF-COORD01` |
+| Kitchen code | `STF-COOK01` |
+| Music code | `STF-MUSIC1` |
+| Decoration code | `STF-DECOR1` |
 | Dinner guard code | `STF-DINNER1` |
 
 The guard screen is at `/staff`. The organizer panel is at `/dashboard`.
@@ -153,7 +166,7 @@ The guard screen is at `/staff`. The organizer panel is at `/dashboard`.
 ## Testing
 
 - **Unit (Vitest, 10 tests)** — dedupe keys, permission defaults and copying, code generation, text normalization.
-- **End-to-end (Playwright, 6 tests)** — organizer login, guard login by code, guest check-in seen live by the organizer, contact permission, forbidden export for a guard, CSV import with preview, event creation, and the screenshot suite.
+- **End-to-end (Playwright, 8 tests)** — organizer login, guard login by code, guest check-in seen live by the organizer, contact permission, forbidden export for a guard, CSV import with preview, event creation, table filling (all chairs red), role-specific schedules, and the screenshot suite.
 - **CI (GitHub Actions)** — install → Prisma generate → typecheck → lint → unit tests → build, plus a second job with PostgreSQL 18 that applies migrations and runs the e2e suite.
 
 ## Deploy for free
@@ -181,6 +194,7 @@ The guard screen is at `/staff`. The organizer panel is at `/dashboard`.
 - Entry **and exit** tracking for venues that need occupancy.
 - Email/SMS delivery of guest invitations.
 - Offline-first guard mode with a sync queue for weak signal.
+- Drag-and-drop floor plan and guest-to-seat assignment.
 - Billing for organizations that manage multiple events.
 
 ## License

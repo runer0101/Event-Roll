@@ -61,6 +61,13 @@ function slug(value: string): string {
     .replace(/^\.+|\.+$/g, '')
 }
 
+function futureDate(days: number, hour = 20): Date {
+  const date = new Date()
+  date.setDate(date.getDate() + days)
+  date.setHours(hour, 0, 0, 0)
+  return date
+}
+
 function guestData(index: number) {
   const name = names[index % names.length]!
   const category =
@@ -102,7 +109,7 @@ async function main() {
     data: {
       organizationId: organization.id,
       name: 'Sunset Fest 2026',
-      date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      date: futureDate(30, 20),
       location: 'Plaza Mayor, Ciudad Demo',
       description:
         'Festival de música en vivo con bandas locales, food trucks y zona VIP.',
@@ -113,7 +120,7 @@ async function main() {
     data: {
       organizationId: organization.id,
       name: 'Cena privada · La Terraza',
-      date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+      date: futureDate(14, 20),
       location: 'La Terraza, Ciudad Demo',
       description: 'Cena de gala para clientes e invitados especiales.',
     },
@@ -125,15 +132,19 @@ async function main() {
       eventId: sunset.id,
       code: 'STF-GUARD01',
       name: 'Guardia Principal',
+      role: 'GUARD',
+      canCheckIn: true,
     },
   })
 
-  await prisma.staff.create({
+  const coordinator = await prisma.staff.create({
     data: {
       organizationId: organization.id,
       eventId: sunset.id,
       code: 'STF-COORD01',
-      name: 'Coordinadora de puerta',
+      name: 'Coordinadora general',
+      role: 'COORDINATOR',
+      canCheckIn: true,
       canViewContact: true,
       canEditGuests: true,
       canExport: true,
@@ -142,13 +153,70 @@ async function main() {
     },
   })
 
-  await prisma.staff.create({
+  const cook = await prisma.staff.create({
+    data: {
+      organizationId: organization.id,
+      eventId: sunset.id,
+      code: 'STF-COOK01',
+      name: 'Chef Principal',
+      role: 'COOK',
+      canCheckIn: false,
+    },
+  })
+
+  const music = await prisma.staff.create({
+    data: {
+      organizationId: organization.id,
+      eventId: sunset.id,
+      code: 'STF-MUSIC1',
+      name: 'DJ Luna',
+      role: 'MUSIC',
+      canCheckIn: false,
+    },
+  })
+
+  const decor = await prisma.staff.create({
+    data: {
+      organizationId: organization.id,
+      eventId: sunset.id,
+      code: 'STF-DECOR1',
+      name: 'Equipo de decoración',
+      role: 'DECOR',
+      canCheckIn: false,
+    },
+  })
+
+  const dinnerStaff = await prisma.staff.create({
     data: {
       organizationId: organization.id,
       eventId: dinner.id,
       code: 'STF-DINNER1',
       name: 'Guardia · Cena privada',
+      role: 'GUARD',
+      canCheckIn: true,
       canViewContact: true,
+    },
+  })
+
+  const dinnerCook = await prisma.staff.create({
+    data: {
+      organizationId: organization.id,
+      eventId: dinner.id,
+      code: 'STF-DINCOOK',
+      name: 'Cocina · Cena privada',
+      role: 'COOK',
+      canCheckIn: false,
+    },
+  })
+
+  const dinnerMusic = await prisma.staff.create({
+    data: {
+      organizationId: organization.id,
+      eventId: dinner.id,
+      code: 'STF-DINMUS',
+      name: 'Música · Cena privada',
+      role: 'MUSIC',
+      canCheckIn: false,
     },
   })
 
@@ -203,9 +271,6 @@ async function main() {
     orderBy: { code: 'asc' },
     take: 4,
   })
-  const dinnerStaff = await prisma.staff.findFirst({
-    where: { eventId: dinner.id },
-  })
 
   for (const [index, guest] of dinnerGuests.entries()) {
     const checkedInAt = new Date(Date.now() - (4 - index) * 3 * 60 * 1000)
@@ -214,7 +279,7 @@ async function main() {
       data: {
         status: 'CHECKED_IN',
         checkedInAt,
-        checkedInById: dinnerStaff?.id ?? null,
+        checkedInById: dinnerStaff.id,
       },
     })
     await prisma.accessLog.create({
@@ -222,18 +287,160 @@ async function main() {
         organizationId: organization.id,
         eventId: dinner.id,
         guestId: guest.id,
-        staffId: dinnerStaff?.id ?? null,
+        staffId: dinnerStaff.id,
         action: 'CHECK_IN',
         createdAt: checkedInAt,
       },
     })
   }
 
+  const tableSpecs = [
+    { name: 'Mesa 1', capacity: 8, occupied: 3 },
+    { name: 'Mesa 2', capacity: 8, occupied: 5 },
+    { name: 'Mesa 3', capacity: 8, occupied: 2 },
+    { name: 'Mesa 4', capacity: 8, occupied: 6 },
+    { name: 'Mesa 5', capacity: 8, occupied: 8 },
+    { name: 'VIP', capacity: 6, occupied: 6 },
+  ]
+
+  await Promise.all(
+    tableSpecs.map((table) =>
+      prisma.eventTable.create({
+        data: {
+          organizationId: organization.id,
+          eventId: sunset.id,
+          name: table.name,
+          capacity: table.capacity,
+          chairs: {
+            create: Array.from({ length: table.capacity }, (_, index) => ({
+              organizationId: organization.id,
+              eventId: sunset.id,
+              number: index + 1,
+              occupied: index < table.occupied,
+            })),
+          },
+        },
+      }),
+    ),
+  )
+
+  await Promise.all(
+    [
+      { name: 'Mesa 1', capacity: 6, occupied: 2 },
+      { name: 'Mesa 2', capacity: 6, occupied: 4 },
+      { name: 'Mesa 3', capacity: 6, occupied: 6 },
+      { name: 'Mesa 4', capacity: 6, occupied: 1 },
+    ].map((table) =>
+      prisma.eventTable.create({
+        data: {
+          organizationId: organization.id,
+          eventId: dinner.id,
+          name: table.name,
+          capacity: table.capacity,
+          chairs: {
+            create: Array.from({ length: table.capacity }, (_, index) => ({
+              organizationId: organization.id,
+              eventId: dinner.id,
+              number: index + 1,
+              occupied: index < table.occupied,
+            })),
+          },
+        },
+      }),
+    ),
+  )
+
+  const atSunset = (hours: number) =>
+    new Date(sunset.date.getTime() + hours * 60 * 60 * 1000)
+  const atDinner = (hours: number) =>
+    new Date(dinner.date.getTime() + hours * 60 * 60 * 1000)
+
+  await prisma.scheduleItem.createMany({
+    data: [
+      {
+        organizationId: organization.id,
+        eventId: sunset.id,
+        title: 'Montaje de mesas y decoración',
+        description: 'Mesas, sillas, mantelería y señalización de la puerta.',
+        startAt: atSunset(-4),
+        status: 'DONE',
+        assigneeId: decor.id,
+      },
+      {
+        organizationId: organization.id,
+        eventId: sunset.id,
+        title: 'Cocina: puesta a punto',
+        description: 'Revisar menú, alergias y tiempos de servicio.',
+        startAt: atSunset(-2),
+        assigneeId: cook.id,
+      },
+      {
+        organizationId: organization.id,
+        eventId: sunset.id,
+        title: 'Apertura de puertas',
+        description: 'Check-in con códigos de invitado.',
+        startAt: atSunset(0),
+        assigneeId: guard.id,
+      },
+      {
+        organizationId: organization.id,
+        eventId: sunset.id,
+        title: 'Servicio de cena',
+        startAt: atSunset(1),
+        assigneeId: cook.id,
+      },
+      {
+        organizationId: organization.id,
+        eventId: sunset.id,
+        title: 'Música en vivo',
+        startAt: atSunset(2),
+        assigneeId: music.id,
+      },
+      {
+        organizationId: organization.id,
+        eventId: sunset.id,
+        title: 'Cierre y conteo final',
+        description: 'Salida de invitados, inventario y reporte.',
+        startAt: atSunset(4),
+        assigneeId: coordinator.id,
+      },
+    ],
+  })
+
+  await prisma.scheduleItem.createMany({
+    data: [
+      {
+        organizationId: organization.id,
+        eventId: dinner.id,
+        title: 'Montaje de la terraza',
+        startAt: atDinner(-2),
+        assigneeId: dinnerStaff.id,
+      },
+      {
+        organizationId: organization.id,
+        eventId: dinner.id,
+        title: 'Servicio de cena',
+        startAt: atDinner(0),
+        assigneeId: dinnerCook.id,
+      },
+      {
+        organizationId: organization.id,
+        eventId: dinner.id,
+        title: 'Música ambiental',
+        startAt: atDinner(1),
+        assigneeId: dinnerMusic.id,
+      },
+    ],
+  })
+
   console.log('Seed completed.')
   console.log(`  Organizer login: ${DEMO_EMAIL} / ${DEMO_PASSWORD}`)
   console.log('  Event: Sunset Fest 2026')
   console.log('  Guard code:     STF-GUARD01')
   console.log('  Coordinator:    STF-COORD01')
+  console.log('  Cook code:      STF-COOK01')
+  console.log('  Music code:     STF-MUSIC1')
+  console.log('  Decor code:     STF-DECOR1')
   console.log('  Dinner guard:   STF-DINNER1')
 }
 

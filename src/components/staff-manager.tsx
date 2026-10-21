@@ -14,12 +14,19 @@ import {
   PERMISSION_LABELS,
   type StaffPermissions,
 } from "@/lib/permissions";
+import {
+  defaultCanCheckIn,
+  roleLabel,
+  STAFF_ROLES,
+} from "@/lib/roles";
+import type { StaffRole } from "@/generated/prisma/enums";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CopyButton } from "@/components/ui/copy-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 
 export function StaffCreateDialog({ eventId }: { eventId: string }) {
   const router = useRouter();
@@ -27,12 +34,19 @@ export function StaffCreateDialog({ eventId }: { eventId: string }) {
   const [permissions, setPermissions] = useState<StaffPermissions>(
     DEFAULT_STAFF_PERMISSIONS,
   );
+  const [role, setRole] = useState<StaffRole>("GUARD");
+  const [canCheckIn, setCanCheckIn] = useState(true);
   const [code, setCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function toggle(key: keyof StaffPermissions) {
     setPermissions((current) => ({ ...current, [key]: !current[key] }));
+  }
+
+  function changeRole(next: StaffRole) {
+    setRole(next);
+    setCanCheckIn(defaultCanCheckIn(next));
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -42,6 +56,8 @@ export function StaffCreateDialog({ eventId }: { eventId: string }) {
     startTransition(async () => {
       const result = await createStaff(eventId, {
         name: data.get("name"),
+        role,
+        canCheckIn,
         ...permissions,
       });
       if (result?.error) {
@@ -58,40 +74,42 @@ export function StaffCreateDialog({ eventId }: { eventId: string }) {
     setCode(null);
     setError(null);
     setPermissions(DEFAULT_STAFF_PERMISSIONS);
+    setRole("GUARD");
+    setCanCheckIn(true);
   }
 
   return (
     <>
       <Button variant="accent" onClick={() => setOpen(true)}>
         <KeyRound className="h-4 w-4" aria-hidden />
-        Nuevo ayudante
+        Nuevo miembro del equipo
       </Button>
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/70 p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="staff-create-title"
         >
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-stone-200 bg-white p-6 shadow-xl">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-stone-800 bg-stone-900 p-6 shadow-xl">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2
                   id="staff-create-title"
-                  className="text-lg font-semibold text-stone-900"
+                  className="text-lg font-semibold text-stone-50"
                 >
-                  Nuevo ayudante
+                  Nuevo miembro del equipo
                 </h2>
-                <p className="mt-1 text-sm text-stone-500">
-                  Se generará un código único. Solo esa persona lo necesita para
-                  entrar.
+                <p className="mt-1 text-sm text-stone-400">
+                  Cada persona recibe un código único y ve solo lo que le
+                  asignes.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={close}
-                className="rounded-lg p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+                className="rounded-lg p-1 text-stone-500 hover:bg-stone-800 hover:text-stone-200"
                 aria-label="Cerrar"
               >
                 <X className="h-5 w-5" />
@@ -101,13 +119,13 @@ export function StaffCreateDialog({ eventId }: { eventId: string }) {
             {code ? (
               <div className="mt-6 space-y-4">
                 <Alert variant="success">
-                  Ayudante creado. Comparte este código por un canal privado.
+                  Miembro creado. Comparte este código por un canal privado.
                 </Alert>
-                <Card className="bg-stone-950 p-5 text-stone-50">
-                  <p className="text-xs uppercase tracking-widest text-stone-400">
+                <Card className="border-amber-400/30 bg-stone-950 p-5 text-stone-50">
+                  <p className="text-xs uppercase tracking-widest text-stone-500">
                     Código de acceso
                   </p>
-                  <p className="mt-2 font-mono text-2xl font-semibold tracking-widest">
+                  <p className="mt-2 font-mono text-2xl font-semibold tracking-widest text-amber-300">
                     {code}
                   </p>
                   <div className="mt-4">
@@ -121,38 +139,75 @@ export function StaffCreateDialog({ eventId }: { eventId: string }) {
             ) : (
               <form onSubmit={handleSubmit} className="mt-5 space-y-4">
                 {error && <Alert variant="danger">{error}</Alert>}
+
                 <div>
                   <Label htmlFor="staff-name">Nombre</Label>
                   <Input
                     id="staff-name"
                     name="name"
-                    placeholder="Ej. Carla, puerta principal"
+                    placeholder="Ej. Carla · puerta principal"
                     required
                     className="mt-1.5"
                   />
                 </div>
 
+                <div>
+                  <Label htmlFor="staff-role">Rol en el evento</Label>
+                  <Select
+                    id="staff-role"
+                    value={role}
+                    onChange={(event) =>
+                      changeRole(event.target.value as StaffRole)
+                    }
+                    className="mt-1.5"
+                  >
+                    {STAFF_ROLES.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-stone-800 p-3 transition hover:border-amber-400/30">
+                  <input
+                    type="checkbox"
+                    checked={canCheckIn}
+                    onChange={(event) => setCanCheckIn(event.target.checked)}
+                    className="mt-0.5 size-4 rounded border-stone-700 text-amber-300 focus:ring-amber-400"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-stone-100">
+                      Puede hacer check-in
+                    </span>
+                    <span className="block text-xs text-stone-400">
+                      Verá la pantalla de puerta para buscar invitados y marcar
+                      entradas.
+                    </span>
+                  </span>
+                </label>
+
                 <fieldset>
-                  <legend className="text-sm font-medium text-stone-800">
+                  <legend className="text-sm font-medium text-stone-100">
                     ¿Qué puede ver y hacer?
                   </legend>
                   <div className="mt-2 space-y-2">
                     {PERMISSION_LABELS.map((permission) => (
                       <label
                         key={permission.key}
-                        className="flex cursor-pointer items-start gap-3 rounded-xl border border-stone-200 p-3 transition hover:border-orange-200 hover:bg-orange-50/40"
+                        className="flex cursor-pointer items-start gap-3 rounded-xl border border-stone-800 p-3 transition hover:border-amber-400/30 hover:bg-amber-400/5"
                       >
                         <input
                           type="checkbox"
                           checked={permissions[permission.key]}
                           onChange={() => toggle(permission.key)}
-                          className="mt-0.5 size-4 rounded border-stone-300 text-orange-600 focus:ring-orange-500"
+                          className="mt-0.5 size-4 rounded border-stone-700 text-amber-300 focus:ring-amber-400"
                         />
                         <span>
-                          <span className="block text-sm font-medium text-stone-800">
+                          <span className="block text-sm font-medium text-stone-100">
                             {permission.label}
                           </span>
-                          <span className="block text-xs text-stone-500">
+                          <span className="block text-xs text-stone-400">
                             {permission.description}
                           </span>
                         </span>
@@ -166,7 +221,7 @@ export function StaffCreateDialog({ eventId }: { eventId: string }) {
                     Cancelar
                   </Button>
                   <Button type="submit" disabled={pending}>
-                    {pending ? "Creando…" : "Crear ayudante"}
+                    {pending ? "Creando…" : "Crear miembro"}
                   </Button>
                 </div>
               </form>
@@ -185,6 +240,8 @@ export function StaffCard({
     id: string;
     name: string;
     code: string;
+    role: StaffRole;
+    canCheckIn: boolean;
     active: boolean;
     canViewContact: boolean;
     canEditGuests: boolean;
@@ -200,6 +257,8 @@ export function StaffCard({
   const [name, setName] = useState(staff.name);
   const [code, setCode] = useState(staff.code);
   const [active, setActive] = useState(staff.active);
+  const [role, setRole] = useState<StaffRole>(staff.role);
+  const [canCheckIn, setCanCheckIn] = useState(staff.canCheckIn);
   const [permissions, setPermissions] = useState<StaffPermissions>({
     canViewContact: staff.canViewContact,
     canEditGuests: staff.canEditGuests,
@@ -214,10 +273,20 @@ export function StaffCard({
     setPermissions((current) => ({ ...current, [key]: !current[key] }));
   }
 
+  function changeRole(next: StaffRole) {
+    setRole(next);
+    setCanCheckIn(defaultCanCheckIn(next));
+  }
+
   function save() {
     setError(null);
     startTransition(async () => {
-      const result = await updateStaffLocal(staff.id, { name, ...permissions });
+      const result = await updateStaffLocal(staff.id, {
+        name,
+        role,
+        canCheckIn,
+        ...permissions,
+      });
       if (result?.error) setError(result.error);
       else router.refresh();
     });
@@ -252,20 +321,23 @@ export function StaffCard({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-base font-semibold text-stone-900">
+            <h3 className="text-base font-semibold text-stone-50">
               {staff.name}
             </h3>
+            <span className="rounded-full bg-amber-400/10 px-2 py-0.5 text-[11px] font-medium text-amber-300 ring-1 ring-inset ring-amber-400/30">
+              {roleLabel(staff.role)}
+            </span>
             <span
               className={
                 active
-                  ? "rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200"
-                  : "rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-medium text-stone-500 ring-1 ring-inset ring-stone-200"
+                  ? "rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-300 ring-1 ring-inset ring-emerald-500/30"
+                  : "rounded-full bg-stone-800 px-2 py-0.5 text-[11px] font-medium text-stone-400 ring-1 ring-inset ring-stone-700"
               }
             >
               {active ? "Activo" : "Inactivo"}
             </span>
           </div>
-          <p className="mt-1 text-xs text-stone-500">
+          <p className="mt-1 text-xs text-stone-400">
             {staff.checkIns} entrada{staff.checkIns !== 1 ? "s" : ""}
             {staff.lastCheckInLabel
               ? ` · última ${staff.lastCheckInLabel}`
@@ -274,7 +346,7 @@ export function StaffCard({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="rounded-lg bg-stone-950 px-2.5 py-1 font-mono text-xs tracking-widest text-stone-50">
+          <span className="rounded-lg bg-stone-950 px-2.5 py-1 font-mono text-xs tracking-widest text-amber-300">
             {code}
           </span>
           <CopyButton value={code} label="Copiar" />
@@ -303,34 +375,70 @@ export function StaffCard({
           save();
         }}
       >
-        <div>
-          <Label htmlFor={`staff-name-${staff.id}`}>Nombre</Label>
-          <Input
-            id={`staff-name-${staff.id}`}
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            className="mt-1.5 max-w-sm"
-          />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <Label htmlFor={`staff-name-${staff.id}`}>Nombre</Label>
+            <Input
+              id={`staff-name-${staff.id}`}
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              className="mt-1.5"
+            />
+          </div>
+          <div>
+            <Label htmlFor={`staff-role-${staff.id}`}>Rol</Label>
+            <Select
+              id={`staff-role-${staff.id}`}
+              value={role}
+              onChange={(event) =>
+                changeRole(event.target.value as StaffRole)
+              }
+              className="mt-1.5"
+            >
+              {STAFF_ROLES.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+          </div>
         </div>
 
+        <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-stone-800 px-3 py-2 text-xs transition hover:border-amber-400/30">
+          <input
+            type="checkbox"
+            checked={canCheckIn}
+            onChange={(event) => setCanCheckIn(event.target.checked)}
+            className="mt-0.5 size-3.5 rounded border-stone-700 text-amber-300 focus:ring-amber-400"
+          />
+          <span>
+            <span className="block font-medium text-stone-200">
+              Puede hacer check-in
+            </span>
+            <span className="block text-stone-500">
+              Solo para roles de puerta o coordinación.
+            </span>
+          </span>
+        </label>
+
         <fieldset>
-          <legend className="text-xs font-medium uppercase tracking-wide text-stone-500">
+          <legend className="text-xs font-medium uppercase tracking-wide text-stone-400">
             Permisos
           </legend>
           <div className="mt-2 grid gap-2 sm:grid-cols-2">
             {PERMISSION_LABELS.map((permission) => (
               <label
                 key={permission.key}
-                className="flex cursor-pointer items-start gap-2 rounded-lg border border-stone-200 px-3 py-2 text-xs transition hover:border-orange-200"
+                className="flex cursor-pointer items-start gap-2 rounded-lg border border-stone-800 px-3 py-2 text-xs transition hover:border-amber-400/30"
               >
                 <input
                   type="checkbox"
                   checked={permissions[permission.key]}
                   onChange={() => toggle(permission.key)}
-                  className="mt-0.5 size-3.5 rounded border-stone-300 text-orange-600 focus:ring-orange-500"
+                  className="mt-0.5 size-3.5 rounded border-stone-700 text-amber-300 focus:ring-amber-400"
                 />
                 <span>
-                  <span className="block font-medium text-stone-700">
+                  <span className="block font-medium text-stone-200">
                     {permission.label}
                   </span>
                 </span>
@@ -341,7 +449,7 @@ export function StaffCard({
 
         <div className="flex flex-wrap items-center gap-2">
           <Button type="submit" size="sm" disabled={pending}>
-            {pending ? "Guardando…" : "Guardar permisos"}
+            {pending ? "Guardando…" : "Guardar cambios"}
           </Button>
           <Button
             type="button"
@@ -367,4 +475,3 @@ export function StaffCard({
     </Card>
   );
 }
-

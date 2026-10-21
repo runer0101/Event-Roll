@@ -48,6 +48,20 @@ test('captures the presentation screenshots', async ({ page, browser }) => {
     fullPage: true,
   })
 
+  await page.goto(`${eventHref}/tables`)
+  await page.waitForTimeout(400)
+  await page.screenshot({
+    path: 'docs/screenshots/tables.png',
+    fullPage: true,
+  })
+
+  await page.goto(`${eventHref}/schedule`)
+  await page.waitForTimeout(400)
+  await page.screenshot({
+    path: 'docs/screenshots/schedule.png',
+    fullPage: true,
+  })
+
   await page.goto(`${eventHref}/staff`)
   await page.waitForTimeout(400)
   await page.screenshot({
@@ -66,4 +80,16 @@ test('captures the presentation screenshots', async ({ page, browser }) => {
     fullPage: true,
   })
   await staff.close()
+
+  const kitchen = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+  })
+  const cook = await kitchen.newPage()
+  await loginStaff(cook, 'STF-COOK01')
+  await cook.waitForTimeout(500)
+  await cook.screenshot({
+    path: 'docs/screenshots/staff-cook.png',
+    fullPage: true,
+  })
+  await kitchen.close()
 })

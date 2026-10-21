@@ -56,10 +56,10 @@ export function EventDangerZone({
       <Card className="p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h3 className="text-sm font-semibold text-stone-900">
+            <h3 className="text-sm font-semibold text-stone-50">
               {isActive ? "Cerrar el evento" : "Reabrir el evento"}
             </h3>
-            <p className="mt-1 max-w-xl text-sm text-stone-500">
+            <p className="mt-1 max-w-xl text-sm text-stone-400">
               {isActive
                 ? "Al cerrarlo, los guardias ya no podrán marcar entradas. La lista y el historial se conservan."
                 : "Vuelve a habilitar el check-in para este evento."}
@@ -86,13 +86,13 @@ export function EventDangerZone({
         </div>
       </Card>
 
-      <Card className="border-red-200 p-5">
+      <Card className="border-red-500/30 p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h3 className="text-sm font-semibold text-red-700">
+            <h3 className="text-sm font-semibold text-red-300">
               Eliminar el evento
             </h3>
-            <p className="mt-1 max-w-xl text-sm text-stone-500">
+            <p className="mt-1 max-w-xl text-sm text-stone-400">
               Se borran la lista, los códigos del equipo y el historial de
               accesos. No se puede deshacer.
             </p>

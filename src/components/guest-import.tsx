@@ -82,11 +82,11 @@ export function GuestImport({ eventId }: { eventId: string }) {
               <div>
                 <h2
                   id="import-title"
-                  className="text-lg font-semibold text-stone-900"
+                  className="text-lg font-semibold text-stone-50"
                 >
                   Importar lista de invitados
                 </h2>
-                <p className="mt-1 text-sm text-stone-500">
+                <p className="mt-1 text-sm text-stone-400">
                   Acepta .xlsx y .csv. Reconoce columnas como nombre, email,
                   teléfono, categoría, acompañantes, mesa y notas.
                 </p>
@@ -97,7 +97,7 @@ export function GuestImport({ eventId }: { eventId: string }) {
                   setOpen(false);
                   reset();
                 }}
-                className="rounded-lg p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+                className="rounded-lg p-1 text-stone-500 hover:bg-stone-800 hover:text-stone-200"
                 aria-label="Cerrar"
               >
                 <X className="h-5 w-5" />
@@ -108,12 +108,12 @@ export function GuestImport({ eventId }: { eventId: string }) {
               {error && <Alert variant="danger">{error}</Alert>}
               {result && <Alert variant="success">{result}</Alert>}
 
-              <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-stone-300 bg-stone-50 px-6 py-8 text-center transition hover:border-orange-300 hover:bg-orange-50/50">
-                <FileSpreadsheet className="h-8 w-8 text-orange-600" aria-hidden />
-                <span className="text-sm font-medium text-stone-800">
+              <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-stone-700 bg-stone-950 px-6 py-8 text-center transition hover:border-amber-300 hover:bg-amber-400/5">
+                <FileSpreadsheet className="h-8 w-8 text-amber-300" aria-hidden />
+                <span className="text-sm font-medium text-stone-100">
                   {fileName || "Selecciona tu archivo"}
                 </span>
-                <span className="text-xs text-stone-500">
+                <span className="text-xs text-stone-400">
                   .xlsx o .csv · máximo 5 MB
                 </span>
                 <input
@@ -128,14 +128,14 @@ export function GuestImport({ eventId }: { eventId: string }) {
               {parsed && (
                 <div className="space-y-3">
                   <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                    <p className="text-stone-600">
-                      <span className="font-semibold text-stone-900">
+                    <p className="text-stone-300">
+                      <span className="font-semibold text-stone-50">
                         {parsed.rows.length}
                       </span>{" "}
                       filas listas de {parsed.total}
                     </p>
                     {parsed.errors.length > 0 && (
-                      <p className="text-amber-700">
+                      <p className="text-amber-300">
                         {parsed.errors.length} filas con problemas
                       </p>
                     )}
@@ -152,9 +152,9 @@ export function GuestImport({ eventId }: { eventId: string }) {
                   )}
 
                   {parsed.rows.length > 0 && (
-                    <div className="overflow-x-auto rounded-xl border border-stone-200">
+                    <div className="overflow-x-auto rounded-xl border border-stone-800">
                       <table className="w-full text-left text-xs">
-                        <thead className="bg-stone-50 text-stone-500">
+                        <thead className="bg-stone-950 text-stone-400">
                           <tr>
                             <th className="px-3 py-2">Nombre</th>
                             <th className="px-3 py-2">Email</th>
@@ -162,19 +162,19 @@ export function GuestImport({ eventId }: { eventId: string }) {
                             <th className="px-3 py-2">Acompañantes</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-stone-100">
+                        <tbody className="divide-y divide-stone-800">
                           {parsed.rows.slice(0, 6).map((row, index) => (
                             <tr key={`${row.name}-${index}`}>
-                              <td className="px-3 py-2 font-medium text-stone-900">
+                              <td className="px-3 py-2 font-medium text-stone-50">
                                 {row.name}
                               </td>
-                              <td className="px-3 py-2 text-stone-600">
+                              <td className="px-3 py-2 text-stone-300">
                                 {row.email || "—"}
                               </td>
-                              <td className="px-3 py-2 text-stone-600">
+                              <td className="px-3 py-2 text-stone-300">
                                 {row.category || "—"}
                               </td>
-                              <td className="px-3 py-2 text-stone-600">
+                              <td className="px-3 py-2 text-stone-300">
                                 {row.plusOnes}
                               </td>
                             </tr>

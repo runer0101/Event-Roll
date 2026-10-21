@@ -30,10 +30,10 @@ export function RegisterForm() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight text-stone-900">
+      <h1 className="text-2xl font-semibold tracking-tight text-stone-50">
         Crea tu cuenta
       </h1>
-      <p className="mt-1 text-sm text-stone-500">
+      <p className="mt-1 text-sm text-stone-400">
         Un panel para tus eventos, tu lista de invitados y tu equipo de puerta.
       </p>
 
@@ -104,11 +104,11 @@ export function RegisterForm() {
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-stone-500">
+      <p className="mt-6 text-center text-sm text-stone-400">
         ¿Ya tienes cuenta?{" "}
         <Link
           href="/login"
-          className="font-medium text-orange-700 hover:underline"
+          className="font-medium text-amber-300 hover:underline"
         >
           Inicia sesión
         </Link>

@@ -22,10 +22,10 @@ export default async function EventSettingsPage({
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-semibold tracking-tight text-stone-900">
+        <h2 className="text-lg font-semibold tracking-tight text-stone-50">
           Ajustes del evento
         </h2>
-        <p className="text-sm text-stone-500">
+        <p className="text-sm text-stone-400">
           Datos generales, estado del check-in y eliminación del evento.
         </p>
       </div>

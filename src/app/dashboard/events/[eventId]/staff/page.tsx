@@ -27,10 +27,10 @@ export default async function StaffPage({
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-stone-900">
+          <h2 className="text-lg font-semibold tracking-tight text-stone-50">
             Equipo de puerta
           </h2>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-stone-400">
             Cada ayudante entra con un código único. Tú decides qué puede ver y
             hacer.
           </p>
@@ -40,20 +40,20 @@ export default async function StaffPage({
 
       <Card className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-orange-600 ring-1 ring-orange-100">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400/10 text-amber-300 ring-1 ring-amber-400/20">
             <KeyRound className="h-5 w-5" aria-hidden />
           </span>
           <div>
-            <h3 className="text-sm font-semibold text-stone-900">
+            <h3 className="text-sm font-semibold text-stone-50">
               Un código, un ayudante
             </h3>
-            <p className="mt-1 max-w-2xl text-sm text-stone-500">
+            <p className="mt-1 max-w-2xl text-sm text-stone-400">
               Comparte el código solo con esa persona. Si se filtra, regenéralo:
               el anterior deja de funcionar al instante.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-xs text-stone-500">
+        <div className="flex items-center gap-2 text-xs text-stone-400">
           <ShieldCheck className="h-4 w-4 text-emerald-600" aria-hidden />
           Permisos aplicados en el servidor
         </div>
@@ -74,6 +74,8 @@ export default async function StaffPage({
                 id: member.id,
                 name: member.name,
                 code: member.code,
+                role: member.role,
+                canCheckIn: member.canCheckIn,
                 active: member.active,
                 canViewContact: member.canViewContact,
                 canEditGuests: member.canEditGuests,
@@ -94,7 +96,7 @@ export default async function StaffPage({
         </div>
       )}
 
-      <p className="flex items-center gap-1.5 text-xs text-stone-400">
+      <p className="flex items-center gap-1.5 text-xs text-stone-500">
         <Users className="h-3.5 w-3.5" aria-hidden />
         Los ayudantes solo pueden ver el evento al que pertenece su código.
       </p>

@@ -6,12 +6,12 @@ type Size = "sm" | "md" | "lg";
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-stone-900 text-white hover:bg-stone-800 shadow-sm shadow-stone-900/10",
+    "bg-amber-400 text-stone-950 hover:bg-amber-300 shadow-sm shadow-amber-400/20",
   accent:
-    "bg-orange-600 text-white hover:bg-orange-700 shadow-sm shadow-orange-600/20",
+    "bg-amber-400 text-stone-950 hover:bg-amber-300 shadow-sm shadow-amber-400/20",
   outline:
-    "border border-stone-300 bg-white text-stone-900 hover:border-stone-400 hover:bg-stone-100",
-  ghost: "text-stone-600 hover:bg-stone-100 hover:text-stone-900",
+    "border border-stone-700 bg-stone-900 text-stone-50 hover:border-stone-400 hover:bg-stone-800",
+  ghost: "text-stone-300 hover:bg-stone-800 hover:text-stone-50",
   danger: "bg-red-600 text-white hover:bg-red-700",
 };
 
@@ -27,7 +27,7 @@ export function buttonClasses(
   className?: string,
 ): string {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40 disabled:pointer-events-none disabled:opacity-50",
+    "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/40 disabled:pointer-events-none disabled:opacity-50",
     variants[variant],
     sizes[size],
     className,

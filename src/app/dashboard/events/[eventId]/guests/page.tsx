@@ -78,10 +78,10 @@ export default async function GuestsPage({
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-stone-900">
+          <h2 className="text-lg font-semibold tracking-tight text-stone-50">
             Lista de invitados
           </h2>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-stone-400">
             {data.total} invitado{data.total !== 1 ? "s" : ""}
             {hasFilters ? " con los filtros actuales" : " en total"}.
           </p>
@@ -103,7 +103,7 @@ export default async function GuestsPage({
         <form className="flex flex-wrap items-center gap-2" action={basePath}>
           <div className="relative min-w-64 flex-1">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-500"
               aria-hidden
             />
             <Input
@@ -126,7 +126,7 @@ export default async function GuestsPage({
           {hasFilters && (
             <Link
               href={basePath}
-              className="inline-flex items-center gap-1 rounded-xl px-2 py-2 text-xs font-medium text-stone-500 hover:text-stone-900"
+              className="inline-flex items-center gap-1 rounded-xl px-2 py-2 text-xs font-medium text-stone-400 hover:text-stone-50"
             >
               <X className="h-3.5 w-3.5" aria-hidden />
               Limpiar
@@ -157,7 +157,7 @@ export default async function GuestsPage({
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[820px] text-left text-sm">
-              <thead className="border-b border-stone-200 bg-stone-50 text-xs uppercase tracking-wide text-stone-500">
+              <thead className="border-b border-stone-800 bg-stone-950 text-xs uppercase tracking-wide text-stone-400">
                 <tr>
                   <th className="px-4 py-3 font-medium">Invitado</th>
                   <th className="px-4 py-3 font-medium">Contacto</th>
@@ -168,43 +168,43 @@ export default async function GuestsPage({
                   <th className="px-4 py-3 text-right font-medium">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100">
+              <tbody className="divide-y divide-stone-800">
                 {data.guests.map((guest) => (
-                  <tr key={guest.id} className="align-top hover:bg-stone-50/60">
+                  <tr key={guest.id} className="align-top hover:bg-stone-950/60">
                     <td className="px-4 py-3">
-                      <p className="font-medium text-stone-900">{guest.name}</p>
-                      <p className="mt-0.5 font-mono text-[11px] text-stone-400">
+                      <p className="font-medium text-stone-50">{guest.name}</p>
+                      <p className="mt-0.5 font-mono text-[11px] text-stone-500">
                         {guest.code}
                       </p>
                     </td>
-                    <td className="px-4 py-3 text-stone-600">
+                    <td className="px-4 py-3 text-stone-300">
                       {guest.email && (
                         <p className="text-xs">{guest.email}</p>
                       )}
                       {guest.phone && (
-                        <p className="text-xs text-stone-500">{guest.phone}</p>
+                        <p className="text-xs text-stone-400">{guest.phone}</p>
                       )}
                       {!guest.email && !guest.phone && (
-                        <span className="text-xs text-stone-400">—</span>
+                        <span className="text-xs text-stone-500">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-stone-600">
+                    <td className="px-4 py-3 text-stone-300">
                       {guest.category || "—"}
                       {guest.table && (
-                        <p className="text-xs text-stone-400">
+                        <p className="text-xs text-stone-500">
                           Mesa {guest.table}
                         </p>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-stone-600">
+                    <td className="px-4 py-3 text-stone-300">
                       {guest.plusOnes > 0 ? `+${guest.plusOnes}` : "—"}
                     </td>
                     <td className="px-4 py-3">{statusBadge(guest.status)}</td>
-                    <td className="px-4 py-3 text-xs text-stone-500">
+                    <td className="px-4 py-3 text-xs text-stone-400">
                       {guest.checkedInAt ? (
                         <>
                           <p>{formatDateTime(guest.checkedInAt)}</p>
-                          <p className="text-stone-400">
+                          <p className="text-stone-500">
                             {guest.checkedInBy?.name ?? "Guardia"}
                           </p>
                         </>
@@ -234,7 +234,7 @@ export default async function GuestsPage({
             </table>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-stone-200 px-4 py-3 text-sm text-stone-500">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-stone-800 px-4 py-3 text-sm text-stone-400">
             <span className="flex items-center gap-1.5">
               <Users className="h-4 w-4" aria-hidden />
               Página {data.page} de {data.pageCount}
@@ -269,7 +269,7 @@ export default async function GuestsPage({
         </Card>
       )}
 
-      <p className="flex items-center gap-1.5 text-xs text-stone-400">
+      <p className="flex items-center gap-1.5 text-xs text-stone-500">
         <FileSpreadsheet className="h-3.5 w-3.5" aria-hidden />
         El código de cada invitado sirve para buscarlo rápido en la puerta.
       </p>

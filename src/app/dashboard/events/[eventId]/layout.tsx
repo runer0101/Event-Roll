@@ -23,7 +23,7 @@ export default async function EventLayout({
     <div className="space-y-6">
       <Link
         href="/dashboard"
-        className="inline-flex items-center gap-1.5 text-sm text-stone-500 transition hover:text-stone-900"
+        className="inline-flex items-center gap-1.5 text-sm text-stone-400 transition hover:text-stone-50"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden />
         Todos los eventos
@@ -35,14 +35,14 @@ export default async function EventLayout({
             <Badge variant={event.status === "ACTIVE" ? "success" : "muted"}>
               {event.status === "ACTIVE" ? "Activo" : "Cerrado"}
             </Badge>
-            <span className="text-xs text-stone-400">
+            <span className="text-xs text-stone-500">
               Panel del organizador
             </span>
           </div>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-900">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-50">
             {event.name}
           </h1>
-          <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-stone-500">
+          <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-stone-400">
             <span className="flex items-center gap-1.5">
               <CalendarDays className="h-4 w-4" aria-hidden />
               {formatDate(event.date)}

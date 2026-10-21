@@ -37,13 +37,13 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-orange-600">
+          <p className="text-xs font-semibold uppercase tracking-widest text-amber-300">
             Panel del organizador
           </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-900">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-50">
             Tus eventos
           </h1>
-          <p className="mt-1 text-sm text-stone-500">
+          <p className="mt-1 text-sm text-stone-400">
             Lista de invitados, equipo de puerta y accesos en vivo.
           </p>
         </div>
@@ -114,31 +114,31 @@ export default async function DashboardPage() {
                       >
                         {event.status === "ACTIVE" ? "Activo" : "Cerrado"}
                       </Badge>
-                      <span className="text-xs text-stone-400">
+                      <span className="text-xs text-stone-500">
                         {event._count.staff} ayudantes
                       </span>
                     </div>
-                    <h2 className="mt-3 truncate text-xl font-semibold tracking-tight text-stone-900">
+                    <h2 className="mt-3 truncate text-xl font-semibold tracking-tight text-stone-50">
                       {event.name}
                     </h2>
-                    <p className="mt-1 flex items-center gap-1.5 text-sm text-stone-500">
+                    <p className="mt-1 flex items-center gap-1.5 text-sm text-stone-400">
                       <CalendarDays className="h-4 w-4" aria-hidden />
                       {formatDate(event.date)} · {event.location}
                     </p>
                   </div>
-                  <Ticket className="h-6 w-6 shrink-0 text-orange-500" aria-hidden />
+                  <Ticket className="h-6 w-6 shrink-0 text-amber-400" aria-hidden />
                 </div>
 
                 <div className="mt-5">
-                  <div className="flex items-center justify-between text-xs text-stone-500">
+                  <div className="flex items-center justify-between text-xs text-stone-400">
                     <span>
                       {event.checkedIn} de {event._count.guests} dentro
                     </span>
-                    <span className="font-medium text-stone-700">{rate}%</span>
+                    <span className="font-medium text-stone-200">{rate}%</span>
                   </div>
-                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-100">
+                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-800">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-400"
+                      className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-400"
                       style={{ width: `${rate}%` }}
                     />
                   </div>
@@ -172,14 +172,14 @@ export default async function DashboardPage() {
 
       <Card className="flex flex-col items-start justify-between gap-4 p-6 sm:flex-row sm:items-center">
         <div className="flex items-start gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-stone-100 text-stone-600">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-stone-800 text-stone-300">
             <DoorOpen className="h-5 w-5" aria-hidden />
           </span>
           <div>
-            <h2 className="text-sm font-semibold text-stone-900">
+            <h2 className="text-sm font-semibold text-stone-50">
               ¿Ya tienes guardias en la puerta?
             </h2>
-            <p className="mt-1 max-w-xl text-sm text-stone-500">
+            <p className="mt-1 max-w-xl text-sm text-stone-400">
               Comparte el código único de cada ayudante. Entran en la vista de
               guardia, buscan al invitado y marcan la entrada; tú lo ves aquí en
               vivo.

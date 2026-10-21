@@ -72,14 +72,14 @@ export function LiveEvent({
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-stone-900">
+          <h2 className="text-lg font-semibold tracking-tight text-stone-50">
             Accesos en vivo
           </h2>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-stone-400">
             Se actualiza automáticamente cada 3 segundos.
           </p>
         </div>
-        <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+        <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
           En vivo
         </span>
@@ -109,9 +109,9 @@ export function LiveEvent({
       </div>
 
       <div>
-        <div className="h-2.5 overflow-hidden rounded-full bg-stone-100">
+        <div className="h-2.5 overflow-hidden rounded-full bg-stone-800">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-400 transition-all duration-500"
+            className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-400 transition-all duration-500"
             style={{ width: `${stats.rate}%` }}
           />
         </div>
@@ -119,17 +119,17 @@ export function LiveEvent({
 
       <div className="grid gap-6 lg:grid-cols-[1.35fr_1fr]">
         <Card className="overflow-hidden">
-          <div className="flex items-center justify-between border-b border-stone-200 px-5 py-4">
-            <h3 className="text-sm font-semibold text-stone-900">
+          <div className="flex items-center justify-between border-b border-stone-800 px-5 py-4">
+            <h3 className="text-sm font-semibold text-stone-50">
               Últimas entradas
             </h3>
-            <span className="text-xs text-stone-500">
+            <span className="text-xs text-stone-400">
               {recent.length} movimientos recientes
             </span>
           </div>
-          <div className="divide-y divide-stone-100">
+          <div className="divide-y divide-stone-800">
             {recent.length === 0 ? (
-              <p className="px-5 py-10 text-center text-sm text-stone-500">
+              <p className="px-5 py-10 text-center text-sm text-stone-400">
                 Todavía no ha entrado nadie. Cuando un guardia marque una
                 entrada, aparecerá aquí.
               </p>
@@ -139,14 +139,14 @@ export function LiveEvent({
                   key={item.id}
                   className="flex items-center gap-3 px-5 py-3.5"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-100">
                     <UserRound className="h-4 w-4" aria-hidden />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-stone-900">
+                    <p className="truncate text-sm font-medium text-stone-50">
                       {item.guestName}
                     </p>
-                    <p className="truncate text-xs text-stone-500">
+                    <p className="truncate text-xs text-stone-400">
                       {item.category ?? "General"} · {item.staffName} ·{" "}
                       {item.atLabel}
                     </p>
@@ -170,15 +170,15 @@ export function LiveEvent({
         </Card>
 
         <Card className="overflow-hidden">
-          <div className="flex items-center justify-between border-b border-stone-200 px-5 py-4">
-            <h3 className="text-sm font-semibold text-stone-900">
+          <div className="flex items-center justify-between border-b border-stone-800 px-5 py-4">
+            <h3 className="text-sm font-semibold text-stone-50">
               Actividad del equipo
             </h3>
-            <span className="text-xs text-stone-500">{staff.length}</span>
+            <span className="text-xs text-stone-400">{staff.length}</span>
           </div>
-          <div className="divide-y divide-stone-100">
+          <div className="divide-y divide-stone-800">
             {staff.length === 0 ? (
-              <p className="px-5 py-10 text-center text-sm text-stone-500">
+              <p className="px-5 py-10 text-center text-sm text-stone-400">
                 Aún no hay ayudantes. Crea el primero en la pestaña Equipo.
               </p>
             ) : (
@@ -187,14 +187,14 @@ export function LiveEvent({
                   key={member.id}
                   className="flex items-center gap-3 px-5 py-3.5"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-100 text-xs font-semibold text-stone-600">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-800 text-xs font-semibold text-stone-300">
                     {initials(member.name)}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-stone-900">
+                    <p className="truncate text-sm font-medium text-stone-50">
                       {member.name}
                     </p>
-                    <p className="text-xs text-stone-500">
+                    <p className="text-xs text-stone-400">
                       {member.checkIns} entrada
                       {member.checkIns !== 1 ? "s" : ""}
                       {member.lastLabel ? ` · última ${member.lastLabel}` : ""}

@@ -33,6 +33,8 @@ export async function createStaff(
       eventId: event.id,
       code: generateStaffCode(),
       name: parsed.data.name,
+      role: parsed.data.role,
+      canCheckIn: parsed.data.canCheckIn,
       canViewContact: parsed.data.canViewContact,
       canEditGuests: parsed.data.canEditGuests,
       canExport: parsed.data.canExport,
@@ -64,6 +66,8 @@ export async function updateStaff(
     where: { id: staff.id },
     data: {
       name: parsed.data.name,
+      role: parsed.data.role,
+      canCheckIn: parsed.data.canCheckIn,
       canViewContact: parsed.data.canViewContact,
       canEditGuests: parsed.data.canEditGuests,
       canExport: parsed.data.canExport,

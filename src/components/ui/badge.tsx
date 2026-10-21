@@ -9,11 +9,11 @@ export type BadgeVariant =
   | "muted";
 
 const variants: Record<BadgeVariant, string> = {
-  accent: "bg-orange-50 text-orange-700 ring-orange-200",
-  success: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-  warning: "bg-amber-50 text-amber-700 ring-amber-200",
-  danger: "bg-red-50 text-red-700 ring-red-200",
-  muted: "bg-stone-100 text-stone-600 ring-stone-200",
+  accent: "bg-amber-400/10 text-amber-300 ring-amber-400/30",
+  success: "bg-emerald-500/10 text-emerald-300 ring-emerald-500/30",
+  warning: "bg-amber-500/10 text-amber-300 ring-amber-500/30",
+  danger: "bg-red-500/10 text-red-300 ring-red-500/30",
+  muted: "bg-stone-800 text-stone-300 ring-stone-700",
 };
 
 export function Badge({

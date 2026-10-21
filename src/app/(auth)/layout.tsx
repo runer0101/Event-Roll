@@ -11,10 +11,10 @@ export default function AuthLayout({
       <aside className="relative hidden overflow-hidden bg-stone-950 p-12 text-stone-50 lg:flex lg:flex-col">
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-32 -top-32 h-[30rem] w-[30rem] rounded-full bg-orange-600/20 blur-3xl"
+          className="pointer-events-none absolute -right-32 -top-32 h-[30rem] w-[30rem] rounded-full bg-amber-500/20 blur-3xl"
         />
         <Link href="/" className="relative flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500 text-stone-950">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-400 text-stone-950">
             <ScanLine className="h-5 w-5" aria-hidden />
           </span>
           <span className="text-lg font-semibold tracking-tight">
@@ -39,14 +39,14 @@ export default function AuthLayout({
               "Panel del organizador en vivo",
             ].map((item) => (
               <li key={item} className="flex items-center gap-3">
-                <span className="h-1.5 w-1.5 rounded-full bg-orange-400" />
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-300" />
                 {item}
               </li>
             ))}
           </ul>
         </div>
 
-        <p className="relative mt-auto pt-12 text-xs text-stone-500">
+        <p className="relative mt-auto pt-12 text-xs text-stone-400">
           Event-Roll · Control de acceso para eventos
         </p>
       </aside>
@@ -57,7 +57,7 @@ export default function AuthLayout({
             href="/"
             className="mb-8 flex items-center gap-2.5 lg:hidden"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500 text-stone-950">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-400 text-stone-950">
               <ScanLine className="h-5 w-5" aria-hidden />
             </span>
             <span className="text-lg font-semibold tracking-tight">

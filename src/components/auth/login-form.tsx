@@ -29,10 +29,10 @@ export function LoginForm() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight text-stone-900">
+      <h1 className="text-2xl font-semibold tracking-tight text-stone-50">
         Entra a tu panel
       </h1>
-      <p className="mt-1 text-sm text-stone-500">
+      <p className="mt-1 text-sm text-stone-400">
         Gestiona la lista, el equipo y los accesos de tus eventos.
       </p>
 
@@ -93,20 +93,20 @@ export function LoginForm() {
         Usar credenciales de la demo
       </Button>
 
-      <p className="mt-6 text-center text-sm text-stone-500">
+      <p className="mt-6 text-center text-sm text-stone-400">
         ¿Aún no tienes cuenta?{" "}
         <Link
           href="/register"
-          className="font-medium text-orange-700 hover:underline"
+          className="font-medium text-amber-300 hover:underline"
         >
           Crea tu organización
         </Link>
       </p>
-      <p className="mt-2 text-center text-sm text-stone-500">
+      <p className="mt-2 text-center text-sm text-stone-400">
         ¿Eres parte del equipo?{" "}
         <Link
           href="/staff"
-          className="font-medium text-orange-700 hover:underline"
+          className="font-medium text-amber-300 hover:underline"
         >
           Entra con tu código
         </Link>

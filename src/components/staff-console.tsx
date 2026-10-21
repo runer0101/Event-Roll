@@ -22,6 +22,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  StaffSchedule,
+  type StaffScheduleItem,
+} from "@/components/staff-schedule";
 import { formatTime } from "@/lib/utils";
 
 type Message = { variant: "success" | "danger"; text: string } | null;
@@ -31,6 +35,7 @@ export function StaffConsole({
   staff,
   counters,
   initialRecent,
+  scheduleItems,
 }: {
   event: {
     id: string;
@@ -41,6 +46,7 @@ export function StaffConsole({
   staff: {
     id: string;
     name: string;
+    roleLabel: string;
     canViewContact: boolean;
     canEditGuests: boolean;
     canExport: boolean;
@@ -49,6 +55,7 @@ export function StaffConsole({
   };
   counters?: { total: number; checkedIn: number; pending: number };
   initialRecent: Array<{ id: string; guestName: string; atLabel: string }>;
+  scheduleItems: StaffScheduleItem[];
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -128,11 +135,11 @@ export function StaffConsole({
   }
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      <header className="border-b border-stone-200 bg-white">
+    <div className="min-h-screen bg-stone-950">
+      <header className="border-b border-stone-800 bg-stone-900">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
           <Link href="/" className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-stone-950">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-400 text-stone-950">
               <ScanLine className="h-4 w-4" aria-hidden />
             </span>
             <span className="hidden text-sm font-semibold sm:block">
@@ -140,16 +147,16 @@ export function StaffConsole({
             </span>
           </Link>
           <div className="min-w-0 text-center">
-            <p className="truncate text-sm font-semibold text-stone-900">
+            <p className="truncate text-sm font-semibold text-stone-50">
               {event.name}
             </p>
-            <p className="truncate text-xs text-stone-500">
+            <p className="truncate text-xs text-stone-400">
               {event.dateLabel} · {event.location}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="hidden text-right text-xs text-stone-500 sm:block">
-              {staff.name}
+            <span className="hidden text-right text-xs text-stone-400 sm:block">
+              {staff.name} · {staff.roleLabel}
             </span>
             <form action={logout}>
               <Button type="submit" variant="ghost" size="sm">
@@ -164,14 +171,14 @@ export function StaffConsole({
       <main className="mx-auto max-w-3xl space-y-5 px-4 py-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-stone-900">
+            <h1 className="text-2xl font-semibold tracking-tight text-stone-50">
               Control de acceso
             </h1>
-            <p className="text-sm text-stone-500">
+            <p className="text-sm text-stone-400">
               Busca al invitado y marca su entrada.
             </p>
           </div>
-          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
             <Radio className="h-3.5 w-3.5" aria-hidden />
             Puerta abierta
           </span>
@@ -186,12 +193,12 @@ export function StaffConsole({
             ].map((item) => (
               <div
                 key={item.label}
-                className="rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-center"
+                className="rounded-xl border border-stone-800 bg-stone-900 px-3 py-2.5 text-center"
               >
-                <p className="text-[10px] uppercase tracking-wider text-stone-500">
+                <p className="text-[10px] uppercase tracking-wider text-stone-400">
                   {item.label}
                 </p>
-                <p className="mt-1 text-lg font-semibold text-stone-900">
+                <p className="mt-1 text-lg font-semibold text-stone-50">
                   {item.value}
                 </p>
               </div>
@@ -203,7 +210,7 @@ export function StaffConsole({
 
         <div className="relative">
           <Search
-            className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-stone-400"
+            className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-stone-500"
             aria-hidden
           />
           <Input
@@ -224,7 +231,7 @@ export function StaffConsole({
           />
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-stone-500">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-stone-400">
           <span>
             {query.trim()
               ? searching
@@ -235,7 +242,7 @@ export function StaffConsole({
           {staff.canExport && (
             <a
               href={`/api/events/${event.id}/export`}
-              className="inline-flex items-center gap-1.5 text-stone-500 hover:text-stone-900"
+              className="inline-flex items-center gap-1.5 text-stone-400 hover:text-stone-50"
             >
               <Download className="h-3.5 w-3.5" aria-hidden />
               Exportar lista
@@ -244,7 +251,7 @@ export function StaffConsole({
         </div>
 
         {query.trim() && !searching && results.length === 0 && (
-          <Card className="p-6 text-center text-sm text-stone-500">
+          <Card className="p-6 text-center text-sm text-stone-400">
             No encontramos a nadie con «{query.trim()}». Revisa la ortografía o
             pide ayuda al organizador.
           </Card>
@@ -260,8 +267,8 @@ export function StaffConsole({
                     <span
                       className={
                         checkedIn
-                          ? "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100"
-                          : "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-600"
+                          ? "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-100"
+                          : "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-stone-800 text-stone-300"
                       }
                     >
                       {checkedIn ? (
@@ -271,25 +278,25 @@ export function StaffConsole({
                       )}
                     </span>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-stone-900">
+                      <p className="truncate text-sm font-semibold text-stone-50">
                         {guest.name}
                       </p>
-                      <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-stone-500">
+                      <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-stone-400">
                         <span>{guest.category || "General"}</span>
                         {guest.plusOnes > 0 && (
                           <span>+{guest.plusOnes} acompañantes</span>
                         )}
-                        <span className="font-mono text-[10px] text-stone-400">
+                        <span className="font-mono text-[10px] text-stone-500">
                           {guest.code}
                         </span>
                       </p>
                       {(guest.email || guest.phone) && (
-                        <p className="mt-1 text-xs text-stone-500">
+                        <p className="mt-1 text-xs text-stone-400">
                           {[guest.email, guest.phone].filter(Boolean).join(" · ")}
                         </p>
                       )}
                       {checkedIn && guest.checkedInAt && (
-                        <p className="mt-1 flex items-center gap-1 text-xs text-emerald-700">
+                        <p className="mt-1 flex items-center gap-1 text-xs text-emerald-300">
                           <Clock className="h-3 w-3" aria-hidden />
                           Ya dentro · {formatTime(guest.checkedInAt)}
                           {guest.checkedInByName
@@ -335,15 +342,15 @@ export function StaffConsole({
         </div>
 
         <Card className="overflow-hidden">
-          <div className="flex items-center justify-between border-b border-stone-200 px-4 py-3">
-            <h2 className="text-sm font-semibold text-stone-900">
+          <div className="flex items-center justify-between border-b border-stone-800 px-4 py-3">
+            <h2 className="text-sm font-semibold text-stone-50">
               Tus últimas entradas
             </h2>
-            <span className="text-xs text-stone-500">{staff.name}</span>
+            <span className="text-xs text-stone-400">{staff.name}</span>
           </div>
-          <div className="divide-y divide-stone-100">
+          <div className="divide-y divide-stone-800">
             {initialRecent.length === 0 ? (
-              <p className="px-4 py-6 text-center text-sm text-stone-500">
+              <p className="px-4 py-6 text-center text-sm text-stone-400">
                 Todavía no has marcado ninguna entrada.
               </p>
             ) : (
@@ -352,10 +359,10 @@ export function StaffConsole({
                   key={item.id}
                   className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm"
                 >
-                  <span className="truncate text-stone-700">
+                  <span className="truncate text-stone-200">
                     {item.guestName}
                   </span>
-                  <span className="shrink-0 text-xs tabular-nums text-stone-400">
+                  <span className="shrink-0 text-xs tabular-nums text-stone-500">
                     {item.atLabel}
                   </span>
                 </div>
@@ -364,7 +371,9 @@ export function StaffConsole({
           </div>
         </Card>
 
-        <p className="text-center text-xs text-stone-400">
+        <StaffSchedule items={scheduleItems} />
+
+        <p className="text-center text-xs text-stone-500">
           Una entrada solo puede marcarse una vez. Si algo falla, avisa al
           organizador.
         </p>

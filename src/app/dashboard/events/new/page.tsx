@@ -10,13 +10,13 @@ export default async function NewEventPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-orange-600">
+        <p className="text-xs font-semibold uppercase tracking-widest text-amber-300">
           Nuevo evento
         </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-900">
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-50">
           Prepara la puerta
         </h1>
-        <p className="mt-1 text-sm text-stone-500">
+        <p className="mt-1 text-sm text-stone-400">
           Crea el evento y después importa la lista de invitados.
         </p>
       </div>
