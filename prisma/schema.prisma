@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum GuestStatus {
+  INVITED
+  CHECKED_IN
+  CANCELLED
+}
+
+enum EventStatus {
+  ACTIVE
+  CLOSED
+}
+
+enum AccessAction {
+  CHECK_IN
+  UNDO_CHECK_IN
+}
+
+model User {
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  passwordHash String
+  createdAt    DateTime      @default(now())
+  organization Organization?
+}
+
+model Organization {
+  id        String     @id @default(cuid())
+  name      String
+  ownerId   String     @unique
+  owner     User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+  events    Event[]
+  guests    Guest[]
+  staff     Staff[]
+  logs      AccessLog[]
+}
+
+model Event {
+  id             String      @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  date           DateTime
+  location       String
+  description    String?
+  status         EventStatus @default(ACTIVE)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  guests         Guest[]
+  staff          Staff[]
+  logs           AccessLog[]
+
+  @@index([organizationId, date])
+}
+
+model Guest {
+  id             String      @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  eventId        String
+  event          Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  code           String      @unique
+  name           String
+  email          String?
+  phone          String?
+  category       String?
+  plusOnes       Int         @default(0)
+  table          String?
+  notes          String?
+  status         GuestStatus @default(INVITED)
+  checkedInAt    DateTime?
+  checkedInById  String?
+  checkedInBy    Staff?      @relation("StaffCheckIns", fields: [checkedInById], references: [id], onDelete: SetNull)
+  logs           AccessLog[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([eventId, name])
+  @@index([eventId, status])
+  @@index([eventId, email])
+}
+
+model Staff {
+  id               String    @id @default(cuid())
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  eventId          String
+  event            Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  code             String    @unique
+  name             String
+  active           Boolean   @default(true)
+  canViewContact   Boolean   @default(false)
+  canEditGuests    Boolean   @default(false)
+  canExport        Boolean   @default(false)
+  canUndoCheckIn   Boolean   @default(false)
+  canViewStats     Boolean   @default(false)
+  lastLoginAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  checkIns         Guest[]   @relation("StaffCheckIns")
+  logs             AccessLog[]
+
+  @@index([eventId, active])
+  @@index([organizationId])
+}
+
+model AccessLog {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  eventId        String
+  event          Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guestId        String
+  guest          Guest        @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  staffId        String?
+  staff          Staff?       @relation(fields: [staffId], references: [id], onDelete: SetNull)
+  action         AccessAction
+  createdAt      DateTime     @default(now())
+
+  @@index([eventId, createdAt])
+  @@index([staffId, createdAt])
+}

@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: eventroll
+      POSTGRES_PASSWORD: eventroll
+      POSTGRES_DB: event_roll
+    ports:
+      - "5432:5432"
+    volumes:
+      - event_roll_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eventroll -d event_roll"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  event_roll_data:
