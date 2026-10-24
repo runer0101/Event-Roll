@@ -25,7 +25,7 @@ export async function createScheduleItem(
 
   const parsed = ScheduleItemSchema.safeParse(input)
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Datos inválidos' }
+    return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos' }
   }
 
   const assigneeId = parsed.data.assigneeId || null
@@ -65,15 +65,7 @@ export async function toggleScheduleItem(
   const user = session?.user
   if (!user) return { error: 'No autorizado' }
 
-  const item = await prisma.scheduleItem.findFirst({
-    where: {
-      id: itemId,
-      organizationId: user.organizationId,
-      ...(user.role === 'STAFF' ? { assigneeId: user.staffId, eventId: user.eventId } : {}),
-    },
-  })
-  if (!item) return { error: 'Tarea no encontrada' }
-
+  // Authorize before looking the item up, mirroring the guest actions.
   if (user.role === 'STAFF') {
     if (!user.staffId || !user.eventId) return { error: 'No autorizado' }
     const staff = await getActiveStaff(
@@ -84,6 +76,15 @@ export async function toggleScheduleItem(
     )
     if (!staff) return { error: 'Tu acceso está inactivo' }
   }
+
+  const item = await prisma.scheduleItem.findFirst({
+    where: {
+      id: itemId,
+      organizationId: user.organizationId,
+      ...(user.role === 'STAFF' ? { assigneeId: user.staffId, eventId: user.eventId } : {}),
+    },
+  })
+  if (!item) return { error: 'Tarea no encontrada' }
 
   const status = item.status === 'DONE' ? 'PENDING' : 'DONE'
   await prisma.scheduleItem.update({

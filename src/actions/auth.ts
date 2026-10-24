@@ -2,6 +2,7 @@
 
 import { AuthError } from 'next-auth'
 import bcrypt from 'bcryptjs'
+import { redirect } from 'next/navigation'
 import { signIn, signOut } from '@/auth'
 import prisma from '@/lib/prisma'
 import {
@@ -21,7 +22,7 @@ const STAFF_ATTEMPT_LIMIT = 8
 export async function registerOrganizer(input: unknown): Promise<ActionResult> {
   const parsed = RegisterSchema.safeParse(input)
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Datos inválidos' }
+    return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos' }
   }
 
   const { name, email, password, organizationName } = parsed.data
@@ -63,10 +64,12 @@ export async function loginOrganizer(input: unknown): Promise<ActionResult> {
   if (wait > 0) return { error: tooManyAttemptsMessage(wait) }
 
   try {
+    // `redirect: false` keeps the success path reachable: the default redirect
+    // throws before the failure counter can be cleared.
     await signIn('credentials', {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirectTo: '/dashboard',
+      redirect: false,
     })
   } catch (error) {
     if (error instanceof AuthError) {
@@ -77,7 +80,7 @@ export async function loginOrganizer(input: unknown): Promise<ActionResult> {
   }
 
   clearFailures(key)
-  return { success: true }
+  redirect('/dashboard')
 }
 
 export async function loginStaff(input: unknown): Promise<ActionResult> {

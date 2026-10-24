@@ -1,21 +1,5 @@
-import { expect, test, type Page } from '@playwright/test'
-
-async function loginOrganizer(page: Page) {
-  await page.goto('/login')
-  await page.waitForTimeout(500)
-  await page.fill('#email', 'demo@event-roll.dev')
-  await page.fill('#password', 'event-roll-demo')
-  await page.getByRole('button', { name: 'Entrar' }).click()
-  await page.waitForURL('**/dashboard')
-}
-
-async function loginStaff(page: Page, code = 'STF-GUARD01') {
-  await page.goto('/staff')
-  await page.waitForTimeout(500)
-  await page.fill('#code', code)
-  await page.getByRole('button', { name: 'Entrar a la puerta' }).click()
-  await page.waitForURL('**/staff/event/**')
-}
+import { expect, test } from '@playwright/test'
+import { loginOrganizer, loginStaff } from './helpers'
 
 test('the organizer signs in and sees the seeded events', async ({ page }) => {
   await page.goto('/')

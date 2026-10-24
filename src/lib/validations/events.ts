@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const EventSchema = z.object({
   name: z.string().trim().min(2, 'Escribe el nombre del evento').max(120),
-  date: z.coerce.date({ invalid_type_error: 'Fecha inválida' }),
+  date: z.coerce.date({ error: 'Fecha inválida' }),
   location: z.string().trim().min(2, 'Escribe el lugar').max(160),
   description: z.string().trim().max(2000).optional().or(z.literal('')),
 })

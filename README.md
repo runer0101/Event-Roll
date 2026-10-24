@@ -169,9 +169,21 @@ The guard screen is at `/staff`. The organizer panel is at `/dashboard`.
 
 ## Testing
 
-- **Unit (Vitest, 10 tests)** — dedupe keys, permission defaults and copying, code generation, text normalization.
+- **Unit (Vitest, 29 tests)** — dedupe keys, permission defaults and copying, code generation, text normalization, timezone conversion, CSV escaping, server-side door authorization (including the `canCheckIn` flag and closed events) and login throttling.
 - **End-to-end (Playwright, 9 tests)** — organizer login, guard login by code, guest check-in seen live by the organizer, contact permission, forbidden export for a guard, cross-event export rejection, CSV import with preview, event creation, table filling (all chairs red), role-specific schedules, and the screenshot suite.
 - **CI (GitHub Actions)** — install → Prisma generate → typecheck → lint → unit tests → build, plus a second job with PostgreSQL 18 that applies migrations and runs the e2e suite.
+
+## Demo scope
+
+This repository is a portfolio demo, not a production deployment. The shortcuts are deliberate:
+
+- The demo organizer credentials are public by design; treat the demo database as disposable and never import real guest data.
+- The login throttle lives in process memory and is keyed by identity; a multi-instance deploy would move it to Redis.
+- Every event shares `NEXT_PUBLIC_APP_TIMEZONE`; per-event timezones would need a schema change.
+- The live dashboard polls every 3 seconds; WebSockets or SSE would be overkill at this scale.
+- Email delivery, password reset and billing are out of scope.
+
+See [SECURITY.md](SECURITY.md) for vulnerability reporting.
 
 ## Deploy for free
 

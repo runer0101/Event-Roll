@@ -1,0 +1,8 @@
+# Never upload local secrets or local tooling to a deployment.
+.env
+.env.*
+!.env.example
+.agents
+.vercel
+test-results
+playwright-report

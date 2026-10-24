@@ -36,7 +36,7 @@ export async function createGuest(
 
   const parsed = GuestSchema.safeParse(input)
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Datos inválidos' }
+    return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos' }
   }
 
   const data = parsed.data
@@ -70,21 +70,14 @@ export async function updateGuest(
 
   const parsed = GuestSchema.safeParse(input)
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Datos inválidos' }
+    return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos' }
   }
-
-  const guest = await prisma.guest.findFirst({
-    where: {
-      id: guestId,
-      organizationId: user.organizationId,
-      ...(user.role === 'STAFF' ? { eventId: user.eventId } : {}),
-    },
-  })
-  if (!guest) return { error: 'Invitado no encontrado' }
 
   const data = parsed.data
   const canEditContact = user.role === 'OWNER'
 
+  // Check the permission before looking the guest up so an unprivileged staff
+  // member cannot use the response to probe guest IDs.
   if (user.role === 'STAFF') {
     if (!user.staffId || !user.eventId) return { error: 'No autorizado' }
     const staff = await getActiveStaff(
@@ -97,6 +90,15 @@ export async function updateGuest(
       return { error: 'No tienes permiso para editar invitados' }
     }
   }
+
+  const guest = await prisma.guest.findFirst({
+    where: {
+      id: guestId,
+      organizationId: user.organizationId,
+      ...(user.role === 'STAFF' ? { eventId: user.eventId } : {}),
+    },
+  })
+  if (!guest) return { error: 'Invitado no encontrado' }
 
   await prisma.guest.update({
     where: { id: guest.id },
@@ -140,7 +142,7 @@ export async function importGuests(
 
   const parsed = ImportGuestsSchema.safeParse(input)
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Datos inválidos' }
+    return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos' }
   }
 
   const existing = await prisma.guest.findMany({

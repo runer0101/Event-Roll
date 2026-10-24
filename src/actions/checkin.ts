@@ -40,7 +40,9 @@ export async function searchGuests(query: string): Promise<StaffGuestResult[]> {
     user.organizationId,
     user.staffSessionVersion ?? -1,
   )
-  if (!staff) return []
+  if (!staff || !staff.canCheckIn || staff.event.status !== 'ACTIVE') {
+    return []
+  }
 
   const guests = await searchGuestsForStaff(
     staff.eventId,
@@ -80,6 +82,9 @@ export async function checkInGuest(guestId: string): Promise<ActionResult> {
     user.staffSessionVersion ?? -1,
   )
   if (!staff) return { error: 'Tu acceso está inactivo' }
+  if (!staff.canCheckIn) {
+    return { error: 'No tienes permiso para hacer check-in' }
+  }
   if (staff.event.status !== 'ACTIVE') {
     return { error: 'El evento está cerrado' }
   }
@@ -135,18 +140,8 @@ export async function undoCheckIn(guestId: string): Promise<ActionResult> {
   const user = session?.user
   if (!user) return { error: 'No autorizado' }
 
-  const guest = await prisma.guest.findFirst({
-    where: {
-      id: guestId,
-      organizationId: user.organizationId,
-      ...(user.role === 'STAFF' ? { eventId: user.eventId } : {}),
-    },
-  })
-  if (!guest) return { error: 'Invitado no encontrado' }
-  if (guest.status !== 'CHECKED_IN') {
-    return { error: 'Ese invitado no tiene una entrada activa' }
-  }
-
+  // Authorize first, then look the guest up: a staff member without the undo
+  // permission should not learn whether a guest ID exists.
   let staffId: string | null = null
   if (user.role === 'STAFF') {
     if (!user.staffId || !user.eventId) return { error: 'No autorizado' }
@@ -160,6 +155,18 @@ export async function undoCheckIn(guestId: string): Promise<ActionResult> {
       return { error: 'No tienes permiso para deshacer check-ins' }
     }
     staffId = staff.id
+  }
+
+  const guest = await prisma.guest.findFirst({
+    where: {
+      id: guestId,
+      organizationId: user.organizationId,
+      ...(user.role === 'STAFF' ? { eventId: user.eventId } : {}),
+    },
+  })
+  if (!guest) return { error: 'Invitado no encontrado' }
+  if (guest.status !== 'CHECKED_IN') {
+    return { error: 'Ese invitado no tiene una entrada activa' }
   }
 
   const undone = await prisma.$transaction(async (tx) => {

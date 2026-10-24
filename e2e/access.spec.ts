@@ -1,21 +1,5 @@
-import { expect, test, type Page } from '@playwright/test'
-
-async function loginOrganizer(page: Page) {
-  await page.goto('/login')
-  await page.waitForTimeout(500)
-  await page.fill('#email', 'demo@event-roll.dev')
-  await page.fill('#password', 'event-roll-demo')
-  await page.getByRole('button', { name: 'Entrar' }).click()
-  await page.waitForURL('**/dashboard')
-}
-
-async function loginStaff(page: Page, code = 'STF-GUARD01') {
-  await page.goto('/staff')
-  await page.waitForTimeout(500)
-  await page.fill('#code', code)
-  await page.getByRole('button', { name: 'Entrar a la puerta' }).click()
-  await page.waitForURL('**/staff/event/**')
-}
+import { expect, test } from '@playwright/test'
+import { eventHref, loginOrganizer, loginStaff } from './helpers'
 
 test('a guard checks a guest in and the organizer sees it live', async ({
   browser,
@@ -24,11 +8,8 @@ test('a guard checks a guest in and the organizer sees it live', async ({
   const ownerPage = await organizer.newPage()
   await loginOrganizer(ownerPage)
 
-  const eventHref = await ownerPage
-    .getByRole('link', { name: 'Abrir panel' })
-    .nth(1)
-    .getAttribute('href')
-  const eventId = eventHref!.split('/').pop()!
+  const eventLink = await eventHref(ownerPage, 'Sunset Fest 2026')
+  const eventId = eventLink.split('/').pop()!
 
   const staff = await browser.newContext()
   const guardPage = await staff.newPage()
@@ -76,17 +57,10 @@ test('a coordinator cannot export another event from the same organization', asy
   const ownerPage = await organizer.newPage()
   await loginOrganizer(ownerPage)
 
-  // The seed lists the dinner first (it happens sooner) and Sunset second.
-  const dinnerHref = await ownerPage
-    .getByRole('link', { name: 'Abrir panel' })
-    .nth(0)
-    .getAttribute('href')
-  const sunsetHref = await ownerPage
-    .getByRole('link', { name: 'Abrir panel' })
-    .nth(1)
-    .getAttribute('href')
-  const dinnerId = dinnerHref!.split('/').pop()!
-  const sunsetId = sunsetHref!.split('/').pop()!
+  const dinnerHref = await eventHref(ownerPage, 'Cena privada · La Terraza')
+  const sunsetHref = await eventHref(ownerPage, 'Sunset Fest 2026')
+  const dinnerId = dinnerHref.split('/').pop()!
+  const sunsetId = sunsetHref.split('/').pop()!
 
   const staff = await browser.newContext()
   const coordinatorPage = await staff.newPage()

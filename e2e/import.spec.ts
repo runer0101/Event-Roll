@@ -1,13 +1,5 @@
-import { expect, test, type Page } from '@playwright/test'
-
-async function loginOrganizer(page: Page) {
-  await page.goto('/login')
-  await page.waitForTimeout(500)
-  await page.fill('#email', 'demo@event-roll.dev')
-  await page.fill('#password', 'event-roll-demo')
-  await page.getByRole('button', { name: 'Entrar' }).click()
-  await page.waitForURL('**/dashboard')
-}
+import { expect, test } from '@playwright/test'
+import { eventHref, loginOrganizer } from './helpers'
 
 test('the organizer imports a CSV list and creates an event', async ({
   page,
@@ -17,11 +9,8 @@ test('the organizer imports a CSV list and creates an event', async ({
   const second = `Acompañante ${stamp}`
 
   await loginOrganizer(page)
-  const eventHref = await page
-    .getByRole('link', { name: 'Abrir panel' })
-    .nth(1)
-    .getAttribute('href')
-  await page.goto(`${eventHref}/guests`)
+  const eventLink = await eventHref(page, 'Sunset Fest 2026')
+  await page.goto(`${eventLink}/guests`)
 
   const csv = [
     'nombre,email,categoria,acompanantes,mesa',

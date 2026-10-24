@@ -1,7 +1,11 @@
 import { PrismaClient } from '../src/generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import bcrypt from 'bcryptjs'
-import { normalizeText } from '../src/lib/utils'
+import {
+  APP_TIME_ZONE,
+  normalizeText,
+  zonedDateTimeToUtc,
+} from '../src/lib/utils'
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
@@ -63,10 +67,23 @@ function slug(value: string): string {
 }
 
 function futureDate(days: number, hour = 20): Date {
-  const date = new Date()
-  date.setDate(date.getDate() + days)
-  date.setHours(hour, 0, 0, 0)
-  return date
+  const target = new Date()
+  target.setUTCDate(target.getUTCDate() + days)
+
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: APP_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(target)
+  const value = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? '00'
+
+  const day = `${value('year')}-${value('month')}-${value('day')}`
+  return zonedDateTimeToUtc(
+    `${day}T${String(hour).padStart(2, '0')}:00`,
+    APP_TIME_ZONE,
+  )
 }
 
 function guestData(index: number) {

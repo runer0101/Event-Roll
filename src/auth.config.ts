@@ -12,8 +12,8 @@ export const authConfig = {
     strategy: 'jwt',
     // Event staff work a single day; a longer window only increases the blast
     // radius of a leaked cookie.
-    maxAge: 60 * 60 * 24 * 7,
-    updateAge: 60 * 60 * 24,
+    maxAge: 60 * 60 * 24,
+    updateAge: 60 * 60,
   },
   trustHost: true,
   callbacks: {

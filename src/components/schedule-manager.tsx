@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { cn, formatTime } from "@/lib/utils";
+import { cn, formatTime, zonedDateTimeToUtc } from "@/lib/utils";
 
 type ScheduleItemView = {
   id: string;
@@ -62,7 +62,9 @@ export function ScheduleManager({
     const form = event.currentTarget;
     const data = new FormData(form);
     const rawStart = String(data.get("startAt") ?? "");
-    const startAt = rawStart ? new Date(rawStart).toISOString() : rawStart;
+    const startAt = rawStart
+      ? zonedDateTimeToUtc(rawStart).toISOString()
+      : rawStart;
     const assigneeId = String(data.get("assigneeId") ?? "");
     const title = String(data.get("title") ?? "").trim();
     const description = String(data.get("description") ?? "").trim();

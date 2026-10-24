@@ -136,7 +136,7 @@ export async function parseGuestFile(file: File): Promise<ParsedGuests> {
     const parsed = GuestSchema.safeParse(raw);
     if (!parsed.success) {
       const message =
-        parsed.error.errors[0]?.message ?? "Datos inválidos en la fila";
+        parsed.error.issues[0]?.message ?? "Datos inválidos en la fila";
       errors.push(`Fila ${index + 2}: ${message}`);
       return;
     }

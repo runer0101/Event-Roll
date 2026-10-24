@@ -1,13 +1,10 @@
 import { expect, test, type Browser } from '@playwright/test'
+import { loginStaff as loginStaffPage } from './helpers'
 
 async function loginStaff(browser: Browser, code: string) {
   const context = await browser.newContext()
   const page = await context.newPage()
-  await page.goto('/staff')
-  await page.waitForTimeout(500)
-  await page.fill('#code', code)
-  await page.getByRole('button', { name: 'Entrar a la puerta' }).click()
-  await page.waitForURL('**/staff/event/**')
+  await loginStaffPage(page, code)
   return { context, page }
 }
 
