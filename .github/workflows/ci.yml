@@ -18,7 +18,7 @@ jobs:
     name: Typecheck, lint, tests and build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: pnpm/action-setup@v4
 
@@ -61,7 +61,7 @@ jobs:
       AUTH_SECRET: ci-secret-for-e2e
       NEXT_PUBLIC_APP_URL: http://localhost:3200
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: pnpm/action-setup@v4
 
