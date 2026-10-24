@@ -204,6 +204,9 @@ See [SECURITY.md](SECURITY.md) for vulnerability reporting.
 
 3. **Done.** The organizer signs up, imports a list and shares the first staff code.
 
+This repository's `main` branch is connected to the Vercel project, so pushes to
+`main` deploy to production automatically.
+
 ## Roadmap
 
 - QR scanning at the door (the guest code already exists).
