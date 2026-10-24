@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, MapPin } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
 import { createEvent, updateEvent } from "@/actions/events";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { zonedDateTimeToUtc } from "@/lib/utils";
 
 type EventFormProps = {
   mode: "create" | "edit";
@@ -39,9 +40,9 @@ export function EventForm({
     const rawDate = String(data.get("date") ?? "");
     const payload = {
       name: data.get("name"),
-      // datetime-local has no timezone: send the instant the browser resolved
-      // so the server does not reinterpret the wall time in UTC.
-      date: rawDate ? new Date(rawDate).toISOString() : rawDate,
+      // datetime-local has no timezone: resolve the wall time in the app's
+      // timezone, not in whatever timezone the browser happens to use.
+      date: rawDate ? zonedDateTimeToUtc(rawDate).toISOString() : rawDate,
       location: data.get("location"),
       description: data.get("description"),
     };
@@ -135,14 +136,5 @@ export function EventForm({
         </span>
       </div>
     </form>
-  );
-}
-
-export function EventDateHint() {
-  return (
-    <p className="flex items-center gap-1.5 text-xs text-stone-400">
-      <MapPin className="h-3.5 w-3.5" aria-hidden />
-      La dirección ayuda a tu equipo a ubicar la puerta.
-    </p>
   );
 }

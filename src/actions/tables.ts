@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import prisma from '@/lib/prisma'
+import { Prisma } from '@/generated/prisma/client'
 import { requireOwner } from '@/lib/session'
 import { getEventForOwner } from '@/lib/queries/events'
 import { TableSchema } from '@/lib/validations/tables'
@@ -23,7 +24,7 @@ export async function createTable(
 
   const parsed = TableSchema.safeParse(input)
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Datos inválidos' }
+    return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos' }
   }
 
   try {
@@ -45,8 +46,14 @@ export async function createTable(
 
     revalidatePath(`/dashboard/events/${event.id}`, 'layout')
     return { success: true, tableId: table.id }
-  } catch {
-    return { error: 'Ya existe una mesa con ese nombre' }
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      return { error: 'Ya existe una mesa con ese nombre' }
+    }
+    throw error
   }
 }
 

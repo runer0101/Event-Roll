@@ -48,6 +48,7 @@ export default async function DashboardLayout({
             <Link
               href="/staff"
               target="_blank"
+              rel="noopener noreferrer"
               className="hidden items-center gap-1.5 rounded-xl border border-stone-700/80 bg-stone-900/60 px-3 py-2 text-xs font-medium text-stone-200 backdrop-blur-sm transition hover:border-amber-400/50 hover:bg-stone-800/80 hover:text-amber-100 sm:inline-flex"
             >
               <ExternalLink className="h-3.5 w-3.5" aria-hidden />

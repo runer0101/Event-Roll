@@ -100,6 +100,7 @@ export default async function EventOverviewPage({
           <Link
             href="/staff"
             target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center gap-2 rounded-xl border border-stone-800 px-3 py-2.5 text-sm text-stone-200 transition hover:border-amber-400/30 hover:bg-amber-400/10"
           >
             <ExternalLink className="h-4 w-4 text-amber-300" aria-hidden />

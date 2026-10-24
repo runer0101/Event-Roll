@@ -155,6 +155,7 @@ export default async function DashboardPage() {
                 <div className="mt-6 flex flex-wrap items-center gap-2">
                   <Link
                     href={`/dashboard/events/${event.id}`}
+                    aria-label={`Abrir panel de ${event.name}`}
                     className={buttonClasses("primary", "sm")}
                   >
                     Abrir panel
@@ -197,6 +198,7 @@ export default async function DashboardPage() {
         <Link
           href="/staff"
           target="_blank"
+          rel="noopener noreferrer"
           className={buttonClasses("outline", "sm", "shrink-0")}
         >
           Abrir vista de guardia

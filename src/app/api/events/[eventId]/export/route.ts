@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { csvCell } from "@/lib/csv";
 import { getEventForOwner } from "@/lib/queries/events";
 import { getActiveStaff } from "@/lib/queries/staff";
 import { formatDateTime } from "@/lib/utils";
@@ -11,13 +12,6 @@ const STATUS_LABEL: Record<string, string> = {
   CHECKED_IN: "Dentro",
   CANCELLED: "Cancelado",
 };
-
-function csvCell(value: string | number | null | undefined): string {
-  const text = value === null || value === undefined ? "" : String(value);
-  // Prevent spreadsheet formula injection when the file is opened in Excel.
-  const safe = /^[=+\-@]/.test(text) ? `'${text}` : text;
-  return `"${safe.replace(/"/g, '""')}"`;
-}
 
 export async function GET(
   _request: Request,

@@ -24,7 +24,7 @@ export async function createStaff(
 
   const parsed = StaffSchema.safeParse(input)
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Datos inválidos' }
+    return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos' }
   }
 
   const staff = await prisma.staff.create({
@@ -59,7 +59,7 @@ export async function updateStaff(
 
   const parsed = StaffSchema.safeParse(input)
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Datos inválidos' }
+    return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos' }
   }
 
   await prisma.staff.update({

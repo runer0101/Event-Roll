@@ -16,7 +16,7 @@ export async function createEvent(input: unknown): Promise<ActionResult> {
   const owner = await requireOwner()
   const parsed = EventSchema.safeParse(input)
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Datos inválidos' }
+    return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos' }
   }
 
   const { name, date, location, description } = parsed.data
@@ -48,7 +48,7 @@ export async function updateEvent(
 
   const parsed = EventSchema.safeParse(input)
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Datos inválidos' }
+    return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos' }
   }
 
   const { name, date, location, description } = parsed.data

@@ -195,7 +195,7 @@ export default async function GuestsPage({
                       {guest.category || "—"}
                       {guest.table && (
                         <p className="text-xs text-stone-500">
-                          Mesa {guest.table}
+                          {guest.table}
                         </p>
                       )}
                     </td>

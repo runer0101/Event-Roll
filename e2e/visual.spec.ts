@@ -1,21 +1,5 @@
-import { test, type Page } from '@playwright/test'
-
-async function loginOrganizer(page: Page) {
-  await page.goto('/login')
-  await page.waitForTimeout(500)
-  await page.fill('#email', 'demo@event-roll.dev')
-  await page.fill('#password', 'event-roll-demo')
-  await page.getByRole('button', { name: 'Entrar' }).click()
-  await page.waitForURL('**/dashboard')
-}
-
-async function loginStaff(page: Page, code = 'STF-GUARD01') {
-  await page.goto('/staff')
-  await page.waitForTimeout(500)
-  await page.fill('#code', code)
-  await page.getByRole('button', { name: 'Entrar a la puerta' }).click()
-  await page.waitForURL('**/staff/event/**')
-}
+import { test } from '@playwright/test'
+import { eventHref, loginOrganizer, loginStaff } from './helpers'
 
 test('captures the presentation screenshots', async ({ page, browser }) => {
   await page.goto('/')
@@ -45,45 +29,44 @@ test('captures the presentation screenshots', async ({ page, browser }) => {
   })
 
   await loginOrganizer(page)
+  // Let the template's 450 ms page-enter fade finish before capturing.
+  await page.waitForTimeout(600)
   await page.screenshot({
     path: 'docs/screenshots/dashboard.png',
     fullPage: true,
   })
 
-  const eventHref = await page
-    .getByRole('link', { name: 'Abrir panel' })
-    .nth(1)
-    .getAttribute('href')
-  await page.goto(eventHref!)
+  const eventLink = await eventHref(page, 'Sunset Fest 2026')
+  await page.goto(eventLink)
   await page.waitForTimeout(600)
   await page.screenshot({
     path: 'docs/screenshots/live.png',
     fullPage: true,
   })
 
-  await page.goto(`${eventHref}/guests`)
-  await page.waitForTimeout(400)
+  await page.goto(`${eventLink}/guests`)
+  await page.waitForTimeout(600)
   await page.screenshot({
     path: 'docs/screenshots/guests.png',
     fullPage: true,
   })
 
-  await page.goto(`${eventHref}/tables`)
-  await page.waitForTimeout(400)
+  await page.goto(`${eventLink}/tables`)
+  await page.waitForTimeout(600)
   await page.screenshot({
     path: 'docs/screenshots/tables.png',
     fullPage: true,
   })
 
-  await page.goto(`${eventHref}/schedule`)
-  await page.waitForTimeout(400)
+  await page.goto(`${eventLink}/schedule`)
+  await page.waitForTimeout(600)
   await page.screenshot({
     path: 'docs/screenshots/schedule.png',
     fullPage: true,
   })
 
-  await page.goto(`${eventHref}/staff`)
-  await page.waitForTimeout(400)
+  await page.goto(`${eventLink}/staff`)
+  await page.waitForTimeout(600)
   await page.screenshot({
     path: 'docs/screenshots/staff.png',
     fullPage: true,
