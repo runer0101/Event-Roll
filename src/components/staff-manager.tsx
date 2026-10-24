@@ -87,17 +87,17 @@ export function StaffCreateDialog({ eventId }: { eventId: string }) {
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/70 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/70 p-4 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="staff-create-title"
         >
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-stone-800 bg-stone-900 p-6 shadow-xl">
+          <div className="modal-in max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-stone-800 bg-stone-900 p-6 shadow-2xl">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2
                   id="staff-create-title"
-                  className="text-lg font-semibold text-stone-50"
+                  className="font-display text-2xl font-medium text-stone-50"
                 >
                   Nuevo miembro del equipo
                 </h2>

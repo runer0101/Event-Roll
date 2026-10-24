@@ -6,13 +6,14 @@ type Size = "sm" | "md" | "lg";
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-amber-400 text-stone-950 hover:bg-amber-300 shadow-sm shadow-amber-400/20",
+    "border border-amber-300/60 bg-gradient-to-b from-amber-200 via-amber-300 to-amber-500 text-stone-950 shadow-[0_10px_30px_-14px_rgba(212,175,55,0.65)] hover:from-amber-100 hover:via-amber-200 hover:to-amber-400",
   accent:
-    "bg-amber-400 text-stone-950 hover:bg-amber-300 shadow-sm shadow-amber-400/20",
+    "border border-amber-300/60 bg-gradient-to-b from-amber-200 via-amber-300 to-amber-500 text-stone-950 shadow-[0_10px_30px_-14px_rgba(212,175,55,0.65)] hover:from-amber-100 hover:via-amber-200 hover:to-amber-400",
   outline:
-    "border border-stone-700 bg-stone-900 text-stone-50 hover:border-stone-400 hover:bg-stone-800",
-  ghost: "text-stone-300 hover:bg-stone-800 hover:text-stone-50",
-  danger: "bg-red-600 text-white hover:bg-red-700",
+    "border border-stone-700 bg-stone-900/60 text-stone-50 backdrop-blur-sm hover:border-amber-400/50 hover:bg-stone-800/80 hover:text-amber-100",
+  ghost: "text-stone-300 hover:bg-stone-800/70 hover:text-amber-100",
+  danger:
+    "border border-red-500/40 bg-red-600/90 text-white hover:bg-red-500",
 };
 
 const sizes: Record<Size, string> = {
@@ -27,7 +28,8 @@ export function buttonClasses(
   className?: string,
 ): string {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/40 disabled:pointer-events-none disabled:opacity-50",
+    "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950 active:translate-y-px disabled:pointer-events-none disabled:opacity-45",
+    "btn-sheen",
     variants[variant],
     sizes[size],
     className,

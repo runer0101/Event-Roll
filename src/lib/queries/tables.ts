@@ -12,12 +12,3 @@ export async function getTablesForEvent(
     },
   })
 }
-
-export async function getTableForOwner(
-  tableId: string,
-  organizationId: string,
-) {
-  return prisma.eventTable.findFirst({
-    where: { id: tableId, organizationId },
-  })
-}

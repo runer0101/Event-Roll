@@ -93,7 +93,11 @@ export async function regenerateStaffCode(
   const code = generateStaffCode()
   await prisma.staff.update({
     where: { id: staff.id },
-    data: { code },
+    data: {
+      code,
+      // Revoke sessions opened with the previous code.
+      sessionVersion: { increment: 1 },
+    },
   })
 
   revalidatePath(`/dashboard/events/${staff.eventId}`, 'layout')
@@ -112,7 +116,11 @@ export async function setStaffActive(
 
   await prisma.staff.update({
     where: { id: staff.id },
-    data: { active },
+    data: {
+      active,
+      // Deactivating or reactivating invalidates sessions opened before now.
+      sessionVersion: { increment: 1 },
+    },
   })
 
   revalidatePath(`/dashboard/events/${staff.eventId}`, 'layout')

@@ -80,6 +80,7 @@ export async function toggleScheduleItem(
       user.staffId,
       user.eventId,
       user.organizationId,
+      user.staffSessionVersion ?? -1,
     )
     if (!staff) return { error: 'Tu acceso está inactivo' }
   }

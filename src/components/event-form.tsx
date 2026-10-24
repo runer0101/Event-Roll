@@ -36,9 +36,12 @@ export function EventForm({
     event.preventDefault();
     setError(null);
     const data = new FormData(event.currentTarget);
+    const rawDate = String(data.get("date") ?? "");
     const payload = {
       name: data.get("name"),
-      date: data.get("date"),
+      // datetime-local has no timezone: send the instant the browser resolved
+      // so the server does not reinterpret the wall time in UTC.
+      date: rawDate ? new Date(rawDate).toISOString() : rawDate,
       location: data.get("location"),
       description: data.get("description"),
     };

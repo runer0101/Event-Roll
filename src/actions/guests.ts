@@ -7,7 +7,7 @@ import { requireOwner } from '@/lib/session'
 import { getEventForOwner } from '@/lib/queries/events'
 import { getActiveStaff } from '@/lib/queries/staff'
 import { guestDedupeKey } from '@/lib/guests'
-import { generateGuestCode } from '@/lib/utils'
+import { generateGuestCode, normalizeText } from '@/lib/utils'
 import {
   GuestSchema,
   ImportGuestsSchema,
@@ -46,6 +46,7 @@ export async function createGuest(
       eventId: event.id,
       code: generateGuestCode(),
       name: data.name,
+      searchName: normalizeText(data.name),
       email: optional(data.email),
       phone: optional(data.phone),
       category: optional(data.category),
@@ -90,6 +91,7 @@ export async function updateGuest(
       user.staffId,
       user.eventId,
       user.organizationId,
+      user.staffSessionVersion ?? -1,
     )
     if (!staff?.canEditGuests) {
       return { error: 'No tienes permiso para editar invitados' }
@@ -100,6 +102,7 @@ export async function updateGuest(
     where: { id: guest.id },
     data: {
       name: data.name,
+      searchName: normalizeText(data.name),
       category: optional(data.category),
       plusOnes: data.plusOnes,
       table: optional(data.table),
@@ -150,6 +153,7 @@ export async function importGuests(
     eventId: string
     code: string
     name: string
+    searchName: string
     email: string | null
     phone: string | null
     category: string | null
@@ -171,6 +175,7 @@ export async function importGuests(
       eventId: event.id,
       code: generateGuestCode(),
       name: row.name,
+      searchName: normalizeText(row.name),
       email: optional(row.email),
       phone: optional(row.phone),
       category: optional(row.category),

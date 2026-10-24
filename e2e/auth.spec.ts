@@ -20,7 +20,7 @@ async function loginStaff(page: Page, code = 'STF-GUARD01') {
 test('the organizer signs in and sees the seeded events', async ({ page }) => {
   await page.goto('/')
   await expect(
-    page.getByRole('heading', { name: /La lista de invitados/ }),
+    page.getByRole('heading', { name: /Cada invitado/ }),
   ).toBeVisible()
 
   await loginOrganizer(page)

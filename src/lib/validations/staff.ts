@@ -13,6 +13,4 @@ export const StaffSchema = z.object({
   canViewStats: z.boolean().default(false),
 })
 
-export const StaffIdSchema = z.object({ staffId: z.string().min(1) })
-
 export type StaffInput = z.infer<typeof StaffSchema>

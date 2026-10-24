@@ -3,7 +3,6 @@ import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { authConfig } from './auth.config'
 import prisma from '@/lib/prisma'
-import { permissionsFromStaff } from '@/lib/permissions'
 import { LoginSchema, StaffCodeSchema } from '@/lib/validations/auth'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -66,7 +65,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           organizationId: staff.organizationId,
           staffId: staff.id,
           eventId: staff.eventId,
-          permissions: permissionsFromStaff(staff),
+          staffSessionVersion: staff.sessionVersion,
         }
       },
     }),

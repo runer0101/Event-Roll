@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import { normalizeText } from '@/lib/utils'
 import type { GuestStatus } from '@/generated/prisma/enums'
 
 const PAGE_SIZE = 25
@@ -25,7 +26,7 @@ export async function getGuestsPage(
     ...(query
       ? {
           OR: [
-            { name: { contains: query, mode: 'insensitive' as const } },
+            { searchName: { contains: normalizeText(query) } },
             { email: { contains: query, mode: 'insensitive' as const } },
             { phone: { contains: query } },
             { code: { contains: query, mode: 'insensitive' as const } },
@@ -59,12 +60,13 @@ export async function searchGuestsForStaff(
   organizationId: string,
   query: string,
   includeContact: boolean,
+  includeEditData: boolean,
 ) {
   const value = query.trim()
   if (value.length < 1) return []
 
   const search = [
-    { name: { contains: value, mode: 'insensitive' as const } },
+    { searchName: { contains: normalizeText(value) } },
     { code: { contains: value, mode: 'insensitive' as const } },
     ...(includeContact
       ? [
@@ -88,6 +90,8 @@ export async function searchGuestsForStaff(
       checkedInAt: true,
       email: includeContact,
       phone: includeContact,
+      table: includeEditData,
+      notes: includeEditData,
       checkedInBy: { select: { name: true } },
     },
   })
@@ -107,8 +111,6 @@ export async function getRecentCheckInsForStaff(
     },
     orderBy: { createdAt: 'desc' },
     take: 8,
-    include: {
-      guest: { select: { id: true, name: true } },
-    },
+    select: { id: true, guestName: true, createdAt: true },
   })
 }

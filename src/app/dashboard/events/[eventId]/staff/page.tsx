@@ -27,7 +27,7 @@ export default async function StaffPage({
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-stone-50">
+          <h2 className="font-display text-2xl font-medium tracking-tight text-stone-50">
             Equipo de puerta
           </h2>
           <p className="text-sm text-stone-400">

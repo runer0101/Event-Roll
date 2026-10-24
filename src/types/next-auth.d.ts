@@ -1,5 +1,4 @@
 import type { DefaultSession } from 'next-auth'
-import type { StaffPermissions } from '@/lib/permissions'
 
 declare module 'next-auth' {
   interface Session {
@@ -9,7 +8,7 @@ declare module 'next-auth' {
       organizationId: string
       staffId?: string
       eventId?: string
-      permissions?: StaffPermissions
+      staffSessionVersion?: number
     } & DefaultSession['user']
   }
 
@@ -18,7 +17,7 @@ declare module 'next-auth' {
     organizationId: string
     staffId?: string
     eventId?: string
-    permissions?: StaffPermissions
+    staffSessionVersion?: number
   }
 }
 
@@ -28,7 +27,7 @@ declare module '@auth/core/jwt' {
     organizationId: string
     staffId?: string
     eventId?: string
-    permissions?: StaffPermissions
+    staffSessionVersion?: number
   }
 }
 
@@ -38,6 +37,6 @@ declare module 'next-auth/jwt' {
     organizationId: string
     staffId?: string
     eventId?: string
-    permissions?: StaffPermissions
+    staffSessionVersion?: number
   }
 }

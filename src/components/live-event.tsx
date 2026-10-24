@@ -72,7 +72,7 @@ export function LiveEvent({
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-stone-50">
+          <h2 className="font-display text-2xl font-medium tracking-tight text-stone-50">
             Accesos en vivo
           </h2>
           <p className="text-sm text-stone-400">
@@ -121,10 +121,10 @@ export function LiveEvent({
         <Card className="overflow-hidden">
           <div className="flex items-center justify-between border-b border-stone-800 px-5 py-4">
             <h3 className="text-sm font-semibold text-stone-50">
-              Últimas entradas
+              Movimientos recientes
             </h3>
             <span className="text-xs text-stone-400">
-              {recent.length} movimientos recientes
+              {recent.length} movimientos
             </span>
           </div>
           <div className="divide-y divide-stone-800">
@@ -134,37 +134,50 @@ export function LiveEvent({
                 entrada, aparecerá aquí.
               </p>
             ) : (
-              recent.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-3 px-5 py-3.5"
-                >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-100">
-                    <UserRound className="h-4 w-4" aria-hidden />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-stone-50">
-                      {item.guestName}
-                    </p>
-                    <p className="truncate text-xs text-stone-400">
-                      {item.category ?? "General"} · {item.staffName} ·{" "}
-                      {item.atLabel}
-                    </p>
-                  </div>
-                  {canUndo && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={pending}
-                      onClick={() => handleUndo(item.guestId)}
-                      title="Deshacer check-in"
+              recent.map((item) => {
+                const isUndo = item.action === "UNDO_CHECK_IN";
+                return (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-3 px-5 py-3.5"
+                  >
+                    <span
+                      className={
+                        isUndo
+                          ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-500/10 text-red-300 ring-1 ring-red-500/20"
+                          : "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/20"
+                      }
                     >
-                      <RotateCcw className="h-3.5 w-3.5" aria-hidden />
-                      <span className="hidden sm:inline">Deshacer</span>
-                    </Button>
-                  )}
-                </div>
-              ))
+                      {isUndo ? (
+                        <RotateCcw className="h-4 w-4" aria-hidden />
+                      ) : (
+                        <UserRound className="h-4 w-4" aria-hidden />
+                      )}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-stone-50">
+                        {item.guestName}
+                      </p>
+                      <p className="truncate text-xs text-stone-400">
+                        {isUndo ? "Check-in deshecho" : item.category ?? "General"}{" "}
+                        · {item.staffName} · {item.atLabel}
+                      </p>
+                    </div>
+                    {canUndo && !isUndo && item.guestId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={pending}
+                        onClick={() => handleUndo(item.guestId!)}
+                        title="Deshacer check-in"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" aria-hidden />
+                        <span className="hidden sm:inline">Deshacer</span>
+                      </Button>
+                    )}
+                  </div>
+                );
+              })
             )}
           </div>
         </Card>

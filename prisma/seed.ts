@@ -1,6 +1,7 @@
 import { PrismaClient } from '../src/generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import bcrypt from 'bcryptjs'
+import { normalizeText } from '../src/lib/utils'
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
@@ -74,6 +75,7 @@ function guestData(index: number) {
     index < 10 ? 'VIP' : index % 9 === 0 ? 'Prensa' : 'General'
   return {
     name,
+    searchName: normalizeText(name),
     email: `${slug(name)}@example.com`,
     phone: `+34 600 ${String(100000 + index)}`,
     category,
@@ -259,6 +261,7 @@ async function main() {
         organizationId: organization.id,
         eventId: sunset.id,
         guestId: guest.id,
+        guestName: guest.name,
         staffId: guard.id,
         action: 'CHECK_IN',
         createdAt: checkedInAt,
@@ -287,6 +290,7 @@ async function main() {
         organizationId: organization.id,
         eventId: dinner.id,
         guestId: guest.id,
+        guestName: guest.name,
         staffId: dinnerStaff.id,
         action: 'CHECK_IN',
         createdAt: checkedInAt,

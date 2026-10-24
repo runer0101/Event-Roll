@@ -78,7 +78,7 @@ export default async function GuestsPage({
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-stone-50">
+          <h2 className="font-display text-2xl font-medium tracking-tight text-stone-50">
             Lista de invitados
           </h2>
           <p className="text-sm text-stone-400">
@@ -157,7 +157,7 @@ export default async function GuestsPage({
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[820px] text-left text-sm">
-              <thead className="border-b border-stone-800 bg-stone-950 text-xs uppercase tracking-wide text-stone-400">
+              <thead className="border-b border-stone-800/80 bg-stone-900/50 text-[10px] uppercase tracking-[0.16em] text-stone-400">
                 <tr>
                   <th className="px-4 py-3 font-medium">Invitado</th>
                   <th className="px-4 py-3 font-medium">Contacto</th>
@@ -170,7 +170,10 @@ export default async function GuestsPage({
               </thead>
               <tbody className="divide-y divide-stone-800">
                 {data.guests.map((guest) => (
-                  <tr key={guest.id} className="align-top hover:bg-stone-950/60">
+                  <tr
+                    key={guest.id}
+                    className="align-top transition-colors hover:bg-amber-400/[0.035]"
+                  >
                     <td className="px-4 py-3">
                       <p className="font-medium text-stone-50">{guest.name}</p>
                       <p className="mt-0.5 font-mono text-[11px] text-stone-500">
@@ -270,7 +273,7 @@ export default async function GuestsPage({
       )}
 
       <p className="flex items-center gap-1.5 text-xs text-stone-500">
-        <FileSpreadsheet className="h-3.5 w-3.5" aria-hidden />
+        <FileSpreadsheet className="h-3.5 w-3.5 text-amber-300/80" aria-hidden />
         El código de cada invitado sirve para buscarlo rápido en la puerta.
       </p>
     </div>

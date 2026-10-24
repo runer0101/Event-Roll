@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+import { cn, formatTime } from "@/lib/utils";
 
 type ScheduleItemView = {
   id: string;
@@ -41,13 +41,6 @@ type StaffOption = {
   name: string;
   roleLabel: string;
 };
-
-function timeLabel(date: Date): string {
-  return new Intl.DateTimeFormat("es", {
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
 
 export function ScheduleManager({
   eventId,
@@ -68,7 +61,8 @@ export function ScheduleManager({
     setError(null);
     const form = event.currentTarget;
     const data = new FormData(form);
-    const startAt = String(data.get("startAt") ?? "");
+    const rawStart = String(data.get("startAt") ?? "");
+    const startAt = rawStart ? new Date(rawStart).toISOString() : rawStart;
     const assigneeId = String(data.get("assigneeId") ?? "");
     const title = String(data.get("title") ?? "").trim();
     const description = String(data.get("description") ?? "").trim();
@@ -95,7 +89,7 @@ export function ScheduleManager({
               title,
               description: description || null,
               startAt: start.toISOString(),
-              startLabel: timeLabel(start),
+              startLabel: formatTime(start),
               status: "PENDING" as const,
               assigneeName: assignee?.name ?? "Sin asignar",
               assigneeRole: assignee?.roleLabel ?? "Equipo",

@@ -19,6 +19,26 @@ async function loginStaff(page: Page, code = 'STF-GUARD01') {
 
 test('captures the presentation screenshots', async ({ page, browser }) => {
   await page.goto('/')
+  // Wait for hydration to install the reveal observer, then walk the page so
+  // every section is visible in the full-page capture.
+  await page.waitForFunction(() =>
+    document.documentElement.classList.contains('reveal-ready'),
+  )
+  await page.waitForTimeout(600)
+  await page.evaluate(async () => {
+    const root = document.documentElement
+    const previous = root.style.scrollBehavior
+    root.style.scrollBehavior = 'auto'
+
+    for (let y = 0; y < root.scrollHeight; y += 500) {
+      window.scrollTo(0, y)
+      await new Promise((resolve) => setTimeout(resolve, 120))
+    }
+
+    window.scrollTo(0, 0)
+    root.style.scrollBehavior = previous
+  })
+  await page.waitForTimeout(1400)
   await page.screenshot({
     path: 'docs/screenshots/landing.png',
     fullPage: true,

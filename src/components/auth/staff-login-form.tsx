@@ -25,7 +25,7 @@ export function StaffLoginForm() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight text-stone-50">
+      <h1 className="font-display text-3xl font-medium tracking-tight text-stone-50">
         Entra con tu código
       </h1>
       <p className="mt-1 text-sm text-stone-400">

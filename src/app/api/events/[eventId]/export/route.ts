@@ -36,10 +36,15 @@ export async function GET(
     if (!user.staffId || !user.eventId) {
       return new Response("No autorizado", { status: 401 });
     }
+    // Staff access is scoped to their own event, not just to the organization.
+    if (event.id !== user.eventId) {
+      return new Response("No autorizado", { status: 403 });
+    }
     const staff = await getActiveStaff(
       user.staffId,
       user.eventId,
       user.organizationId,
+      user.staffSessionVersion ?? -1,
     );
     if (!staff?.canExport) {
       return new Response("No autorizado", { status: 403 });

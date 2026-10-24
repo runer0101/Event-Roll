@@ -8,7 +8,13 @@ import type { NextAuthConfig } from 'next-auth'
  */
 export const authConfig = {
   pages: { signIn: '/login' },
-  session: { strategy: 'jwt' },
+  session: {
+    strategy: 'jwt',
+    // Event staff work a single day; a longer window only increases the blast
+    // radius of a leaked cookie.
+    maxAge: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
+  },
   trustHost: true,
   callbacks: {
     jwt({ token, user }) {
@@ -17,7 +23,7 @@ export const authConfig = {
         token.organizationId = user.organizationId
         token.staffId = user.staffId
         token.eventId = user.eventId
-        token.permissions = user.permissions
+        token.staffSessionVersion = user.staffSessionVersion
       }
       return token
     },
@@ -28,16 +34,17 @@ export const authConfig = {
         organizationId?: string
         staffId?: string
         eventId?: string
-        permissions?: typeof session.user.permissions
+        staffSessionVersion?: number
       }
 
       if (session.user) {
         session.user.id = claims.sub ?? ''
-        session.user.role = claims.role ?? 'OWNER'
+        // Fail closed: a token without a role must never become an organizer.
+        session.user.role = claims.role ?? 'STAFF'
         session.user.organizationId = claims.organizationId ?? ''
         session.user.staffId = claims.staffId
         session.user.eventId = claims.eventId
-        session.user.permissions = claims.permissions
+        session.user.staffSessionVersion = claims.staffSessionVersion
       }
       return session
     },

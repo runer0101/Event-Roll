@@ -22,6 +22,8 @@ export type StaffGuestResult = {
   checkedInAt: string | null
   email?: string
   phone?: string
+  table?: string | null
+  notes?: string | null
   checkedInByName?: string | null
 }
 
@@ -36,6 +38,7 @@ export async function searchGuests(query: string): Promise<StaffGuestResult[]> {
     user.staffId,
     user.eventId,
     user.organizationId,
+    user.staffSessionVersion ?? -1,
   )
   if (!staff) return []
 
@@ -44,6 +47,7 @@ export async function searchGuests(query: string): Promise<StaffGuestResult[]> {
     staff.organizationId,
     query,
     staff.canViewContact,
+    staff.canEditGuests,
   )
 
   return guests.map((guest) => ({
@@ -56,6 +60,8 @@ export async function searchGuests(query: string): Promise<StaffGuestResult[]> {
     checkedInAt: guest.checkedInAt?.toISOString() ?? null,
     email: guest.email ?? undefined,
     phone: guest.phone ?? undefined,
+    table: guest.table ?? null,
+    notes: guest.notes ?? null,
     checkedInByName: guest.checkedInBy?.name ?? null,
   }))
 }
@@ -71,6 +77,7 @@ export async function checkInGuest(guestId: string): Promise<ActionResult> {
     user.staffId,
     user.eventId,
     user.organizationId,
+    user.staffSessionVersion ?? -1,
   )
   if (!staff) return { error: 'Tu acceso está inactivo' }
   if (staff.event.status !== 'ACTIVE') {
@@ -78,7 +85,7 @@ export async function checkInGuest(guestId: string): Promise<ActionResult> {
   }
 
   const result = await prisma.$transaction(async (tx) => {
-    const updated = await tx.guest.updateMany({
+    const updated = await tx.guest.updateManyAndReturn({
       where: {
         id: guestId,
         eventId: staff.eventId,
@@ -90,9 +97,10 @@ export async function checkInGuest(guestId: string): Promise<ActionResult> {
         checkedInAt: new Date(),
         checkedInById: staff.id,
       },
+      select: { name: true },
     })
 
-    if (updated.count !== 1) {
+    if (updated.length !== 1) {
       return { ok: false as const }
     }
 
@@ -101,6 +109,7 @@ export async function checkInGuest(guestId: string): Promise<ActionResult> {
         organizationId: staff.organizationId,
         eventId: staff.eventId,
         guestId,
+        guestName: updated[0]!.name,
         staffId: staff.id,
         action: 'CHECK_IN',
       },
@@ -145,6 +154,7 @@ export async function undoCheckIn(guestId: string): Promise<ActionResult> {
       user.staffId,
       user.eventId,
       user.organizationId,
+      user.staffSessionVersion ?? -1,
     )
     if (!staff?.canUndoCheckIn) {
       return { error: 'No tienes permiso para deshacer check-ins' }
@@ -152,21 +162,40 @@ export async function undoCheckIn(guestId: string): Promise<ActionResult> {
     staffId = staff.id
   }
 
-  await prisma.$transaction(async (tx) => {
-    await tx.guest.update({
-      where: { id: guest.id },
+  const undone = await prisma.$transaction(async (tx) => {
+    // Conditional update, mirroring the check-in path: two guards undoing the
+    // same entry (or an undo racing a check-in) only logs once.
+    const updated = await tx.guest.updateMany({
+      where: {
+        id: guest.id,
+        eventId: guest.eventId,
+        organizationId: guest.organizationId,
+        status: 'CHECKED_IN',
+      },
       data: { status: 'INVITED', checkedInAt: null, checkedInById: null },
     })
+
+    if (updated.count !== 1) {
+      return false
+    }
+
     await tx.accessLog.create({
       data: {
         organizationId: guest.organizationId,
         eventId: guest.eventId,
         guestId: guest.id,
+        guestName: guest.name,
         staffId,
         action: 'UNDO_CHECK_IN',
       },
     })
+
+    return true
   })
+
+  if (!undone) {
+    return { error: 'Ese invitado ya no tiene una entrada activa' }
+  }
 
   revalidatePath(`/staff/event/${guest.eventId}`, 'layout')
   revalidatePath(`/dashboard/events/${guest.eventId}`, 'layout')

@@ -68,3 +68,40 @@ test('the coordinator permission reveals guest contact data', async ({
   await expect(page.getByText('Lucía Fernández')).toBeVisible()
   await expect(page.getByText('lucia.fernandez@example.com')).toBeVisible()
 })
+
+test('a coordinator cannot export another event from the same organization', async ({
+  browser,
+}) => {
+  const organizer = await browser.newContext()
+  const ownerPage = await organizer.newPage()
+  await loginOrganizer(ownerPage)
+
+  // The seed lists the dinner first (it happens sooner) and Sunset second.
+  const dinnerHref = await ownerPage
+    .getByRole('link', { name: 'Abrir panel' })
+    .nth(0)
+    .getAttribute('href')
+  const sunsetHref = await ownerPage
+    .getByRole('link', { name: 'Abrir panel' })
+    .nth(1)
+    .getAttribute('href')
+  const dinnerId = dinnerHref!.split('/').pop()!
+  const sunsetId = sunsetHref!.split('/').pop()!
+
+  const staff = await browser.newContext()
+  const coordinatorPage = await staff.newPage()
+  await loginStaff(coordinatorPage, 'STF-COORD01')
+
+  const forbidden = await coordinatorPage.request.get(
+    `/api/events/${dinnerId}/export`,
+  )
+  expect(forbidden.status()).toBe(403)
+
+  const allowed = await coordinatorPage.request.get(
+    `/api/events/${sunsetId}/export`,
+  )
+  expect(allowed.status()).toBe(200)
+
+  await organizer.close()
+  await staff.close()
+})

@@ -72,17 +72,17 @@ export function GuestImport({ eventId }: { eventId: string }) {
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/70 p-4 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="import-title"
         >
-          <Card className="max-h-[90vh] w-full max-w-2xl overflow-y-auto p-6">
+          <Card className="modal-in max-h-[90vh] w-full max-w-2xl overflow-y-auto p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2
                   id="import-title"
-                  className="text-lg font-semibold text-stone-50"
+                  className="font-display text-2xl font-medium text-stone-50"
                 >
                   Importar lista de invitados
                 </h2>

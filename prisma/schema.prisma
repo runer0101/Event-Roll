@@ -90,6 +90,7 @@ model Guest {
   event          Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
   code           String      @unique
   name           String
+  searchName     String
   email          String?
   phone          String?
   category       String?
@@ -105,6 +106,7 @@ model Guest {
   updatedAt      DateTime    @updatedAt
 
   @@index([eventId, name])
+  @@index([eventId, searchName])
   @@index([eventId, status])
   @@index([eventId, email])
 }
@@ -126,6 +128,7 @@ model Staff {
   canUndoCheckIn   Boolean   @default(false)
   canViewStats     Boolean   @default(false)
   lastLoginAt      DateTime?
+  sessionVersion   Int       @default(0)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   checkIns         Guest[]   @relation("StaffCheckIns")
@@ -142,8 +145,9 @@ model AccessLog {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   eventId        String
   event          Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  guestId        String
-  guest          Guest        @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  guestId        String?
+  guest          Guest?       @relation(fields: [guestId], references: [id], onDelete: SetNull)
+  guestName      String
   staffId        String?
   staff          Staff?       @relation(fields: [staffId], references: [id], onDelete: SetNull)
   action         AccessAction

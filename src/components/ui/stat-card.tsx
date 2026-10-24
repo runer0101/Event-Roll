@@ -15,22 +15,26 @@ export function StatCard({
   accent?: boolean;
 }) {
   return (
-    <Card className="p-5">
+    <Card className="card-hover group relative overflow-hidden p-5">
+      <span
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/50 to-transparent opacity-60 transition-opacity duration-500 group-hover:opacity-100"
+      />
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-stone-400">
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-stone-400">
             {label}
           </p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight text-stone-50">
+          <p className="mt-2 font-display text-4xl font-semibold leading-none tracking-tight text-stone-50">
             {value}
           </p>
-          {hint && <p className="mt-1 text-xs text-stone-400">{hint}</p>}
+          {hint && <p className="mt-2 text-xs text-stone-400">{hint}</p>}
         </div>
         <span
           className={
             accent
-              ? "flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400/15 text-amber-300"
-              : "flex h-10 w-10 items-center justify-center rounded-xl bg-stone-800 text-stone-300"
+              ? "flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-b from-amber-300/25 to-amber-500/10 text-amber-200 ring-1 ring-amber-400/25"
+              : "flex h-11 w-11 items-center justify-center rounded-xl bg-stone-800/70 text-stone-300 ring-1 ring-stone-700/80"
           }
         >
           <Icon className="h-5 w-5" aria-hidden />

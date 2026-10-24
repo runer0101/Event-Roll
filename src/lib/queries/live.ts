@@ -3,9 +3,10 @@ import { formatTime } from '@/lib/utils'
 
 export type LiveFeedItem = {
   id: string
-  guestId: string
+  guestId: string | null
   guestName: string
   category: string | null
+  action: 'CHECK_IN' | 'UNDO_CHECK_IN'
   staffName: string
   at: string
   atLabel: string
@@ -43,11 +44,15 @@ export async function getLiveData(
       where: { eventId, organizationId, status: 'CHECKED_IN' },
     }),
     prisma.accessLog.findMany({
-      where: { eventId, organizationId, action: 'CHECK_IN' },
+      where: {
+        eventId,
+        organizationId,
+        action: { in: ['CHECK_IN', 'UNDO_CHECK_IN'] },
+      },
       orderBy: { createdAt: 'desc' },
       take: 12,
       include: {
-        guest: { select: { id: true, name: true, category: true } },
+        guest: { select: { id: true, category: true } },
         staff: { select: { name: true } },
       },
     }),
@@ -76,9 +81,10 @@ export async function getLiveData(
     },
     recent: recent.map((log) => ({
       id: log.id,
-      guestId: log.guest.id,
-      guestName: log.guest.name,
-      category: log.guest.category,
+      guestId: log.guest?.id ?? null,
+      guestName: log.guestName,
+      category: log.guest?.category ?? null,
+      action: log.action,
       staffName: log.staff?.name ?? 'Sistema',
       at: log.createdAt.toISOString(),
       atLabel: formatTime(log.createdAt),

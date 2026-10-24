@@ -18,7 +18,7 @@ export function EventTabs({ eventId }: { eventId: string }) {
   const base = `/dashboard/events/${eventId}`;
 
   return (
-    <nav className="flex gap-1 overflow-x-auto border-b border-stone-800">
+    <nav className="flex gap-1 overflow-x-auto border-b border-stone-800/80">
       {tabs.map((tab) => {
         const href = `${base}${tab.segment}`;
         const active =
@@ -32,13 +32,13 @@ export function EventTabs({ eventId }: { eventId: string }) {
             className={cn(
               "relative whitespace-nowrap px-4 py-2.5 text-sm font-medium transition-colors",
               active
-                ? "text-stone-50"
+                ? "text-amber-100"
                 : "text-stone-400 hover:text-stone-100",
             )}
           >
             {tab.label}
             {active && (
-              <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-amber-400" />
+              <span className="absolute inset-x-3 bottom-0 h-px rounded-full bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_12px_rgba(212,175,55,0.7)]" />
             )}
           </Link>
         );

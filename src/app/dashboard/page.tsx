@@ -4,13 +4,13 @@ import {
   CheckCircle2,
   DoorOpen,
   Plus,
-  Ticket,
   Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { NerdGlyph } from "@/components/ui/nerd-glyph";
 import { StatCard } from "@/components/ui/stat-card";
 import { getEventsForOwner } from "@/lib/queries/events";
 import { requireOwner } from "@/lib/session";
@@ -37,10 +37,8 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-300">
-            Panel del organizador
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-50">
+          <p className="eyebrow">Panel del organizador</p>
+          <h1 className="mt-2 font-display text-4xl font-medium tracking-tight text-stone-50 sm:text-5xl">
             Tus eventos
           </h1>
           <p className="mt-1 text-sm text-stone-400">
@@ -103,7 +101,14 @@ export default async function DashboardPage() {
                 ? 0
                 : Math.round((event.checkedIn / event._count.guests) * 100);
             return (
-              <Card key={event.id} className="p-6">
+              <Card
+                key={event.id}
+                className="card-hover group relative overflow-hidden p-6"
+              >
+                <span
+                  aria-hidden
+                  className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent opacity-70"
+                />
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
@@ -118,7 +123,7 @@ export default async function DashboardPage() {
                         {event._count.staff} ayudantes
                       </span>
                     </div>
-                    <h2 className="mt-3 truncate text-xl font-semibold tracking-tight text-stone-50">
+                    <h2 className="mt-3 truncate font-display text-2xl font-medium tracking-tight text-stone-50">
                       {event.name}
                     </h2>
                     <p className="mt-1 flex items-center gap-1.5 text-sm text-stone-400">
@@ -126,7 +131,10 @@ export default async function DashboardPage() {
                       {formatDate(event.date)} · {event.location}
                     </p>
                   </div>
-                  <Ticket className="h-6 w-6 shrink-0 text-amber-400" aria-hidden />
+                  <NerdGlyph
+                    name="ticket"
+                    className="shrink-0 text-[1.4rem] text-amber-400"
+                  />
                 </div>
 
                 <div className="mt-5">
@@ -138,7 +146,7 @@ export default async function DashboardPage() {
                   </div>
                   <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-800">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-400"
+                      className="h-full rounded-full bg-gradient-to-r from-amber-500 via-amber-300 to-amber-200 shadow-[0_0_14px_rgba(212,175,55,0.5)]"
                       style={{ width: `${rate}%` }}
                     />
                   </div>
@@ -172,7 +180,7 @@ export default async function DashboardPage() {
 
       <Card className="flex flex-col items-start justify-between gap-4 p-6 sm:flex-row sm:items-center">
         <div className="flex items-start gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-stone-800 text-stone-300">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-amber-400/20 bg-amber-400/10 text-amber-200">
             <DoorOpen className="h-5 w-5" aria-hidden />
           </span>
           <div>

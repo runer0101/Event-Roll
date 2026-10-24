@@ -12,6 +12,7 @@ export type StaffSession = {
   staffId: string
   eventId: string
   organizationId: string
+  staffSessionVersion: number
   name: string
 }
 
@@ -41,6 +42,9 @@ export async function requireStaff(): Promise<StaffSession> {
     staffId: user.staffId,
     eventId: user.eventId,
     organizationId: user.organizationId,
+    // -1 never matches a real version, so a token minted before the claim
+    // existed is rejected instead of being silently trusted.
+    staffSessionVersion: user.staffSessionVersion ?? -1,
     name: user.name ?? '',
   }
 }

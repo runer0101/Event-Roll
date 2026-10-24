@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LogOut, ScanLine } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { logout } from "@/actions/auth";
 import { StaffConsole } from "@/components/staff-console";
 import { StaffSchedule } from "@/components/staff-schedule";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { NerdGlyph } from "@/components/ui/nerd-glyph";
 import { getEventCounters } from "@/lib/queries/events";
 import { getRecentCheckInsForStaff } from "@/lib/queries/guests";
 import { getScheduleForStaff } from "@/lib/queries/schedule";
@@ -24,7 +25,10 @@ export default async function StaffEventPage({
 }) {
   const session = await requireStaff();
   const { eventId } = await params;
-  const staff = await getStaffForSession(session.staffId);
+  const staff = await getStaffForSession(
+    session.staffId,
+    session.staffSessionVersion,
+  );
 
   if (
     !staff ||
@@ -37,7 +41,7 @@ export default async function StaffEventPage({
 
   if (staff.event.status !== "ACTIVE") {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-stone-950 px-4">
+      <main className="relative flex min-h-svh items-center justify-center overflow-hidden bg-stone-950 px-4">
         <div className="max-w-md rounded-2xl border border-stone-800 bg-stone-900 p-8 text-center shadow-sm">
           <h1 className="text-xl font-semibold text-stone-50">
             Este evento está cerrado
@@ -46,6 +50,12 @@ export default async function StaffEventPage({
             El organizador cerró el check-in. Si crees que es un error, habla con
             el organizador del evento.
           </p>
+          <form action={logout} className="mt-5 flex justify-center">
+            <Button type="submit" variant="outline" size="sm">
+              <LogOut className="h-4 w-4" aria-hidden />
+              Salir
+            </Button>
+          </form>
         </div>
       </main>
     );
@@ -69,15 +79,15 @@ export default async function StaffEventPage({
 
   if (!staff.canCheckIn) {
     return (
-      <div className="min-h-screen bg-stone-950">
-        <header className="border-b border-stone-800 bg-stone-900">
+      <div className="min-h-svh bg-stone-950">
+        <header className="border-b border-stone-800/70 bg-stone-950/80 backdrop-blur-xl">
           <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-400 text-stone-950">
-                <ScanLine className="h-4 w-4" aria-hidden />
+            <Link href="/" className="group flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-300/40 bg-gradient-to-b from-amber-200 to-amber-500 text-stone-950 transition-transform duration-500 group-hover:rotate-3">
+                <NerdGlyph name="ticket" className="text-[1.05rem]" />
               </span>
-              <span className="hidden text-sm font-semibold text-stone-50 sm:block">
-                Event-Roll
+              <span className="font-display hidden text-lg font-semibold text-stone-50 sm:block">
+                Event-Roll<span className="text-amber-400">.</span>
               </span>
             </Link>
             <div className="min-w-0 text-center">
@@ -160,7 +170,7 @@ export default async function StaffEventPage({
       }
       initialRecent={recent.map((log) => ({
         id: log.id,
-        guestName: log.guest.name,
+        guestName: log.guestName,
         atLabel: formatTime(log.createdAt),
       }))}
       scheduleItems={scheduleItems}

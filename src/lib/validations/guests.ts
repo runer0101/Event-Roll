@@ -18,8 +18,6 @@ export const GuestSchema = z.object({
   notes: z.string().trim().max(500).optional().or(z.literal('')),
 })
 
-export const GuestIdSchema = z.object({ guestId: z.string().min(1) })
-
 export const ImportGuestsSchema = z.object({
   eventId: z.string().min(1),
   rows: z.array(GuestSchema).min(1, 'No hay invitados para importar').max(5000),

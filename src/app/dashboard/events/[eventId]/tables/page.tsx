@@ -23,7 +23,7 @@ export default async function TablesPage({
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-semibold tracking-tight text-stone-50">
+        <h2 className="font-display text-2xl font-medium tracking-tight text-stone-50">
           Mesas y sillas
         </h2>
         <p className="text-sm text-stone-400">

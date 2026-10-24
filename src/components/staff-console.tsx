@@ -10,7 +10,6 @@ import {
   LogOut,
   Radio,
   RotateCcw,
-  ScanLine,
   Search,
   UserRound,
 } from "lucide-react";
@@ -26,6 +25,8 @@ import {
   StaffSchedule,
   type StaffScheduleItem,
 } from "@/components/staff-schedule";
+import { StaffGuestEditor } from "@/components/staff/staff-guest-editor";
+import { NerdGlyph } from "@/components/ui/nerd-glyph";
 import { formatTime } from "@/lib/utils";
 
 type Message = { variant: "success" | "danger"; text: string } | null;
@@ -111,6 +112,24 @@ export function StaffConsole({
     });
   }
 
+  function handleGuestSaved(guest: {
+    id: string;
+    name: string;
+    category: string | null;
+    plusOnes: number;
+  }) {
+    setResults((current) =>
+      current.map((item) =>
+        item.id === guest.id ? { ...item, ...guest } : item,
+      ),
+    );
+    setMessage({
+      variant: "success",
+      text: `Datos de ${guest.name} actualizados.`,
+    });
+    router.refresh();
+  }
+
   function undo(guest: StaffGuestResult) {
     setMessage(null);
     startTransition(async () => {
@@ -135,12 +154,12 @@ export function StaffConsole({
   }
 
   return (
-    <div className="min-h-screen bg-stone-950">
-      <header className="border-b border-stone-800 bg-stone-900">
+    <div className="min-h-svh bg-stone-950">
+      <header className="border-b border-stone-800/70 bg-stone-950/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
           <Link href="/" className="flex items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-400 text-stone-950">
-              <ScanLine className="h-4 w-4" aria-hidden />
+              <NerdGlyph name="ticket" className="text-[1.05rem]" />
             </span>
             <span className="hidden text-sm font-semibold sm:block">
               Event-Roll
@@ -171,7 +190,7 @@ export function StaffConsole({
       <main className="mx-auto max-w-3xl space-y-5 px-4 py-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-stone-50">
+            <h1 className="font-display text-3xl font-medium tracking-tight text-stone-50">
               Control de acceso
             </h1>
             <p className="text-sm text-stone-400">
@@ -227,7 +246,7 @@ export function StaffConsole({
             }}
             placeholder="Busca por nombre, código, email o teléfono…"
             autoFocus
-            className="h-14 rounded-2xl pl-12 text-base"
+            className="h-14 rounded-2xl border-stone-700/80 bg-stone-950/70 pl-12 text-base shadow-[0_0_0_1px_rgba(212,175,55,0.04)] focus:border-amber-400/70"
           />
         </div>
 
@@ -261,7 +280,10 @@ export function StaffConsole({
           {results.map((guest) => {
             const checkedIn = guest.status === "CHECKED_IN";
             return (
-              <Card key={guest.id} className="p-4">
+              <Card
+                key={guest.id}
+                className="card-hover p-4 hover:border-amber-400/25"
+              >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="flex min-w-0 items-start gap-3">
                     <span
@@ -307,7 +329,20 @@ export function StaffConsole({
                     </div>
                   </div>
 
-                  <div className="flex shrink-0 items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    {staff.canEditGuests && (
+                      <StaffGuestEditor
+                        guest={{
+                          id: guest.id,
+                          name: guest.name,
+                          category: guest.category,
+                          plusOnes: guest.plusOnes,
+                          table: guest.table ?? null,
+                          notes: guest.notes ?? null,
+                        }}
+                        onSaved={handleGuestSaved}
+                      />
+                    )}
                     {checkedIn ? (
                       <>
                         <Badge variant="success">Dentro</Badge>

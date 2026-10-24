@@ -4,9 +4,19 @@ import { AuthError } from 'next-auth'
 import bcrypt from 'bcryptjs'
 import { signIn, signOut } from '@/auth'
 import prisma from '@/lib/prisma'
+import {
+  clearFailures,
+  recordFailure,
+  retryAfterSeconds,
+  tooManyAttemptsMessage,
+} from '@/lib/rate-limit'
 import { LoginSchema, RegisterSchema, StaffCodeSchema } from '@/lib/validations/auth'
 
 type ActionResult = { success?: boolean; error?: string }
+
+const LOGIN_WINDOW_MS = 10 * 60 * 1000
+const OWNER_ATTEMPT_LIMIT = 5
+const STAFF_ATTEMPT_LIMIT = 8
 
 export async function registerOrganizer(input: unknown): Promise<ActionResult> {
   const parsed = RegisterSchema.safeParse(input)
@@ -48,6 +58,10 @@ export async function loginOrganizer(input: unknown): Promise<ActionResult> {
     return { error: 'Email o contraseña inválidos' }
   }
 
+  const key = `owner:${parsed.data.email}`
+  const wait = retryAfterSeconds(key, OWNER_ATTEMPT_LIMIT)
+  if (wait > 0) return { error: tooManyAttemptsMessage(wait) }
+
   try {
     await signIn('credentials', {
       email: parsed.data.email,
@@ -56,11 +70,13 @@ export async function loginOrganizer(input: unknown): Promise<ActionResult> {
     })
   } catch (error) {
     if (error instanceof AuthError) {
+      recordFailure(key, LOGIN_WINDOW_MS)
       return { error: 'Email o contraseña incorrectos' }
     }
     throw error
   }
 
+  clearFailures(key)
   return { success: true }
 }
 
@@ -70,18 +86,25 @@ export async function loginStaff(input: unknown): Promise<ActionResult> {
     return { error: 'Escribe un código válido' }
   }
 
+  const key = `staff:${parsed.data.code}`
+  const wait = retryAfterSeconds(key, STAFF_ATTEMPT_LIMIT)
+  if (wait > 0) return { error: tooManyAttemptsMessage(wait) }
+
   const staff = await prisma.staff.findUnique({
     where: { code: parsed.data.code },
     include: { event: true },
   })
 
   if (!staff || !staff.active) {
+    recordFailure(key, LOGIN_WINDOW_MS)
     return { error: 'Código inválido o inactivo' }
   }
   if (staff.event.status !== 'ACTIVE') {
+    clearFailures(key)
     return { error: 'Este evento ya está cerrado' }
   }
 
+  clearFailures(key)
   try {
     await signIn('staff-code', {
       code: parsed.data.code,
@@ -89,6 +112,7 @@ export async function loginStaff(input: unknown): Promise<ActionResult> {
     })
   } catch (error) {
     if (error instanceof AuthError) {
+      recordFailure(key, LOGIN_WINDOW_MS)
       return { error: 'No se pudo iniciar sesión con ese código' }
     }
     throw error

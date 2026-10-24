@@ -22,6 +22,7 @@ export async function getActiveStaff(
   staffId: string,
   eventId: string,
   organizationId: string,
+  sessionVersion: number,
 ) {
   return prisma.staff.findFirst({
     where: {
@@ -29,14 +30,18 @@ export async function getActiveStaff(
       eventId,
       organizationId,
       active: true,
+      sessionVersion,
     },
     include: { event: true },
   })
 }
 
-export async function getStaffForSession(staffId: string) {
-  return prisma.staff.findUnique({
-    where: { id: staffId },
+export async function getStaffForSession(
+  staffId: string,
+  sessionVersion: number,
+) {
+  return prisma.staff.findFirst({
+    where: { id: staffId, sessionVersion },
     include: { event: true },
   })
 }

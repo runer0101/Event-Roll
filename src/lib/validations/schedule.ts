@@ -7,6 +7,4 @@ export const ScheduleItemSchema = z.object({
   description: z.string().trim().max(500).optional().or(z.literal('')),
 })
 
-export const ScheduleStatusSchema = z.enum(['PENDING', 'DONE'])
-
 export type ScheduleItemInput = z.infer<typeof ScheduleItemSchema>

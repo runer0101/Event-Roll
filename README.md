@@ -69,8 +69,12 @@ Event-Roll turns that into one live system:
 
 - **No double entry, proven at the database level.** Check-in is a conditional `updateMany` (`status = INVITED`) inside a transaction, followed by an audit log. The second scan gets `count = 0` and an "already used" response.
 - **Permissions are not just hidden in the UI.** Every server action re-reads the staff row from the database and checks the current permission before touching data. Deactivating a code takes effect immediately.
-- **Excel parsing happens before the write.** The browser produces a preview and row-level errors; the server validates the same rows again with Zod before `createMany`. Duplicates are detected by email, then phone + name, then name.
-- **Tenant isolation is explicit.** Owner queries use the session's `organizationId`; staff queries use both `organizationId` and `eventId`. A tampered ID returns "not found", not another tenant's data.
+- **Excel parsing happens before the write.** The browser produces a preview and row-level errors; the server validates the same rows again with Zod before `createMany`. Duplicates are detected by email, then phone + name, then name. The import Server Action allows up to 8 MB so a 5 MB spreadsheet does not hit the 1 MB default.
+- **Search ignores accents.** Guests store a normalized `searchName`, so "lucia" finds "Lucía" from both the organizer panel and the door screen.
+- **Tenant isolation is explicit.** Owner queries use the session's `organizationId`; staff queries use both `organizationId` and `eventId`, and the export route rejects a staff member asking for another event. A tampered ID returns "not found" or 403, not another tenant's data.
+- **Audit rows survive guest deletion.** Each access log stores a guest-name snapshot and nulls the foreign key instead of cascading, so the history is not erased when a guest is removed.
+- **Revocable staff sessions.** Regenerating a code or deactivating a helper bumps a per-staff session version; tokens issued before that moment stop working immediately.
+- **Repeated logins are throttled.** Five failed organizer passwords or eight failed staff codes within ten minutes return a retry message, and a successful login clears the counter. The in-process map is a speed bump; a multi-instance deploy would move it to Redis.
 - **Live without WebSocket infrastructure.** The dashboard polls a small, session-protected route every 3 seconds. It pauses while the tab is hidden and keeps the initial render server-side.
 - **Seat state is derived, never duplicated.** Every chair is a row; a table is full when all its chairs are occupied. The client updates the UI immediately (red chair, red table) and the server persists each click.
 - **The same login serves different roles.** `/staff/event/[id]` reads the member's `canCheckIn`: door and coordination see the check-in console; kitchen, music and decoration see their personal schedule.
@@ -84,7 +88,7 @@ Event-Roll turns that into one live system:
 | Language | TypeScript (strict) |
 | Database | PostgreSQL + Prisma 7 (`pg` driver adapter) |
 | Auth | Auth.js v5 (credentials for organizers, code provider for staff, JWT sessions) |
-| UI | React 19 + Tailwind CSS v4 + Lucide |
+| UI | React 19 + Tailwind CSS v4 + Lucide + a 1.9 KB subset of [Symbols Nerd Font](https://www.nerdfonts.com/) |
 | Imports | `read-excel-file` + Papa Parse |
 | Tests | Vitest + Playwright |
 | Tooling | pnpm, ESLint, GitHub Actions |
@@ -166,7 +170,7 @@ The guard screen is at `/staff`. The organizer panel is at `/dashboard`.
 ## Testing
 
 - **Unit (Vitest, 10 tests)** — dedupe keys, permission defaults and copying, code generation, text normalization.
-- **End-to-end (Playwright, 8 tests)** — organizer login, guard login by code, guest check-in seen live by the organizer, contact permission, forbidden export for a guard, CSV import with preview, event creation, table filling (all chairs red), role-specific schedules, and the screenshot suite.
+- **End-to-end (Playwright, 9 tests)** — organizer login, guard login by code, guest check-in seen live by the organizer, contact permission, forbidden export for a guard, cross-event export rejection, CSV import with preview, event creation, table filling (all chairs red), role-specific schedules, and the screenshot suite.
 - **CI (GitHub Actions)** — install → Prisma generate → typecheck → lint → unit tests → build, plus a second job with PostgreSQL 18 that applies migrations and runs the e2e suite.
 
 ## Deploy for free
