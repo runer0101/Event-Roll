@@ -22,7 +22,7 @@
     "@prisma/client": "7.10.1",
     "bcryptjs": "2.4.3",
     "lucide-react": "^1.60.0",
-    "nanoid": "5.1.16",
+    "nanoid": "6.0.2",
     "next": "16.4.2",
     "next-auth": "5.0.0-beta.32",
     "papaparse": "^5.7.0",
