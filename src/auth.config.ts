@@ -15,7 +15,13 @@ export const authConfig = {
     maxAge: 60 * 60 * 24,
     updateAge: 60 * 60,
   },
-  trustHost: true,
+  // A spoofed Host header would otherwise let Auth.js build callback and
+  // redirect URLs pointing at an attacker's origin. Vercel and local
+  // development are trusted; any other host must opt in with AUTH_TRUST_HOST.
+  trustHost:
+    process.env.NODE_ENV !== 'production' ||
+    process.env.VERCEL === '1' ||
+    process.env.AUTH_TRUST_HOST === 'true',
   callbacks: {
     jwt({ token, user }) {
       if (user) {

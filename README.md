@@ -177,8 +177,9 @@ The guard screen is at `/staff`. The organizer panel is at `/dashboard`.
 
 This repository is a portfolio demo, not a production deployment. The shortcuts are deliberate:
 
-- The demo organizer credentials are public by design; treat the demo database as disposable and never import real guest data.
-- The login throttle lives in process memory and is keyed by identity; a multi-instance deploy would move it to Redis.
+- The demo organizer credentials are public by design, so the demo organization is read-only for the destructive actions (deleting events or guests, rotating staff codes, deactivating staff). Treat the demo database as disposable and never import real guest data.
+- The login throttle lives in process memory and is keyed by address and identity; a multi-instance deploy would move it to Redis.
+- The Content Security Policy keeps `'unsafe-inline'` for scripts because Next ships inline bootstrap scripts; removing it needs a per-request nonce threaded through every render.
 - Every event shares `NEXT_PUBLIC_APP_TIMEZONE`; per-event timezones would need a schema change.
 - The live dashboard polls every 3 seconds; WebSockets or SSE would be overkill at this scale.
 - Email delivery, password reset and billing are out of scope.
@@ -199,6 +200,9 @@ See [SECURITY.md](SECURITY.md) for vulnerability reporting.
    - `DATABASE_URL` (pooled)
    - `AUTH_SECRET` (`openssl rand -base64 32`)
    - `NEXT_PUBLIC_APP_URL` (your production URL)
+   - `DISABLE_PUBLIC_SIGNUP=true` to close signup on a public demo; leave it unset locally
+   - `DEMO_OWNER_EMAIL` only when the demo organizer uses another address (defaults to `demo@event-roll.dev`)
+   - `AUTH_TRUST_HOST=true` on any host that is neither Vercel nor local development, so Auth.js trusts the forwarded `Host` header
 
    Deploy. The project uses the standard Next.js preset.
 

@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+import { contentSecurityPolicy } from "./src/lib/security-headers";
+
+const isDev = process.env.NODE_ENV !== "production";
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -20,8 +23,9 @@ const nextConfig: NextConfig = {
       },
     },
   },
-  // Modest baseline headers. A full CSP is deliberately left out: it would
-  // need per-request nonces for Next's inline bootstrap scripts.
+  // Baseline headers plus a real CSP. `script-src` keeps 'unsafe-inline'
+  // because Next ships inline bootstrap scripts; a nonce would remove it at the
+  // cost of threading every render. See src/lib/security-headers.ts.
   async headers() {
     return [
       {
@@ -34,6 +38,11 @@ const nextConfig: NextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
           },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains",
+          },
+          { key: "Content-Security-Policy", value: contentSecurityPolicy(isDev) },
         ],
       },
     ];

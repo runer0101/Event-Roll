@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import prisma from '@/lib/prisma'
 import { Prisma } from '@/generated/prisma/client'
+import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
 import { requireOwner } from '@/lib/session'
 import { getEventForOwner } from '@/lib/queries/events'
 import { TableSchema } from '@/lib/validations/tables'
@@ -61,6 +62,9 @@ export async function deleteTable(
   tableId: string,
 ): Promise<ActionResult> {
   const owner = await requireOwner()
+  // The demo organization is shared: its floor plan must survive the visitors.
+  if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
+
   const table = await prisma.eventTable.findFirst({
     where: { id: tableId, organizationId: owner.organizationId },
   })
@@ -89,6 +93,9 @@ export async function toggleChair(chairId: string): Promise<ActionResult> {
 
 export async function resetTable(tableId: string): Promise<ActionResult> {
   const owner = await requireOwner()
+  // Resetting wipes the seat assignments, which cannot be undone.
+  if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
+
   const table = await prisma.eventTable.findFirst({
     where: { id: tableId, organizationId: owner.organizationId },
   })

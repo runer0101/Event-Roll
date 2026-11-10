@@ -2,8 +2,10 @@
 
 import { AuthError } from 'next-auth'
 import bcrypt from 'bcryptjs'
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { signIn, signOut } from '@/auth'
+import { clientIpFrom } from '@/lib/client-ip'
 import prisma from '@/lib/prisma'
 import {
   clearFailures,
@@ -11,6 +13,10 @@ import {
   retryAfterSeconds,
   tooManyAttemptsMessage,
 } from '@/lib/rate-limit'
+import {
+  PUBLIC_SIGNUP_DISABLED_MESSAGE,
+  isPublicSignupDisabled,
+} from '@/lib/signup'
 import { LoginSchema, RegisterSchema, StaffCodeSchema } from '@/lib/validations/auth'
 
 type ActionResult = { success?: boolean; error?: string }
@@ -18,8 +24,44 @@ type ActionResult = { success?: boolean; error?: string }
 const LOGIN_WINDOW_MS = 10 * 60 * 1000
 const OWNER_ATTEMPT_LIMIT = 5
 const STAFF_ATTEMPT_LIMIT = 8
+// One address may not spray identities: every attempt counts here, so rotating
+// the email or the code no longer buys an unlimited number of guesses.
+const IP_ATTEMPT_LIMIT = 20
+
+async function requestIp(): Promise<string> {
+  return clientIpFrom(await headers())
+}
+
+function ipKey(ip: string): string {
+  return `ip:${ip}`
+}
+
+// Identity buckets stay global on purpose: an account must not earn a fresh set
+// of guesses for every address an attacker happens to control.
+function ownerKey(email: string): string {
+  return `owner:${email}`
+}
+
+function staffKey(code: string): string {
+  return `staff:${code}`
+}
+
+// Signup keeps its own bucket so failed logins never lock an honest registration.
+function registerKey(ip: string): string {
+  return `register:${ip}`
+}
 
 export async function registerOrganizer(input: unknown): Promise<ActionResult> {
+  if (isPublicSignupDisabled()) {
+    return { error: PUBLIC_SIGNUP_DISABLED_MESSAGE }
+  }
+
+  const ip = await requestIp()
+  const key = registerKey(ip)
+  const wait = retryAfterSeconds(key, IP_ATTEMPT_LIMIT)
+  if (wait > 0) return { error: tooManyAttemptsMessage(wait) }
+  recordFailure(key, LOGIN_WINDOW_MS)
+
   const parsed = RegisterSchema.safeParse(input)
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos' }
@@ -28,7 +70,8 @@ export async function registerOrganizer(input: unknown): Promise<ActionResult> {
   const { name, email, password, organizationName } = parsed.data
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) {
-    return { error: 'Ya existe una cuenta con ese email' }
+    // Neutral on purpose: confirming the address would let anyone enumerate accounts.
+    return { error: 'No se pudo crear la cuenta. Si ya tienes una, inicia sesión.' }
   }
 
   const passwordHash = await bcrypt.hash(password, 12)
@@ -59,7 +102,11 @@ export async function loginOrganizer(input: unknown): Promise<ActionResult> {
     return { error: 'Email o contraseña inválidos' }
   }
 
-  const key = `owner:${parsed.data.email}`
+  const ip = await requestIp()
+  const ipWait = retryAfterSeconds(ipKey(ip), IP_ATTEMPT_LIMIT)
+  if (ipWait > 0) return { error: tooManyAttemptsMessage(ipWait) }
+
+  const key = ownerKey(parsed.data.email)
   const wait = retryAfterSeconds(key, OWNER_ATTEMPT_LIMIT)
   if (wait > 0) return { error: tooManyAttemptsMessage(wait) }
 
@@ -74,6 +121,7 @@ export async function loginOrganizer(input: unknown): Promise<ActionResult> {
   } catch (error) {
     if (error instanceof AuthError) {
       recordFailure(key, LOGIN_WINDOW_MS)
+      recordFailure(ipKey(ip), LOGIN_WINDOW_MS)
       return { error: 'Email o contraseña incorrectos' }
     }
     throw error
@@ -89,7 +137,11 @@ export async function loginStaff(input: unknown): Promise<ActionResult> {
     return { error: 'Escribe un código válido' }
   }
 
-  const key = `staff:${parsed.data.code}`
+  const ip = await requestIp()
+  const ipWait = retryAfterSeconds(ipKey(ip), IP_ATTEMPT_LIMIT)
+  if (ipWait > 0) return { error: tooManyAttemptsMessage(ipWait) }
+
+  const key = staffKey(parsed.data.code)
   const wait = retryAfterSeconds(key, STAFF_ATTEMPT_LIMIT)
   if (wait > 0) return { error: tooManyAttemptsMessage(wait) }
 
@@ -100,6 +152,7 @@ export async function loginStaff(input: unknown): Promise<ActionResult> {
 
   if (!staff || !staff.active) {
     recordFailure(key, LOGIN_WINDOW_MS)
+    recordFailure(ipKey(ip), LOGIN_WINDOW_MS)
     return { error: 'Código inválido o inactivo' }
   }
   if (staff.event.status !== 'ACTIVE') {
@@ -116,6 +169,7 @@ export async function loginStaff(input: unknown): Promise<ActionResult> {
   } catch (error) {
     if (error instanceof AuthError) {
       recordFailure(key, LOGIN_WINDOW_MS)
+      recordFailure(ipKey(ip), LOGIN_WINDOW_MS)
       return { error: 'No se pudo iniciar sesión con ese código' }
     }
     throw error
