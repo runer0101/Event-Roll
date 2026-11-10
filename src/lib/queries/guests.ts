@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import { isSearchableQuery } from '@/lib/guests'
 import { normalizeText } from '@/lib/utils'
 import type { GuestStatus } from '@/generated/prisma/enums'
 
@@ -63,7 +64,7 @@ export async function searchGuestsForStaff(
   includeEditData: boolean,
 ) {
   const value = query.trim()
-  if (value.length < 1) return []
+  if (!isSearchableQuery(value)) return []
 
   const search = [
     { searchName: { contains: normalizeText(value) } },
