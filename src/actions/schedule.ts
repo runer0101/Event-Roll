@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { auth } from '@/auth'
 import prisma from '@/lib/prisma'
+import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
 import { requireOwner } from '@/lib/session'
 import { getEventForOwner } from '@/lib/queries/events'
 import { getActiveStaff } from '@/lib/queries/staff'
@@ -101,6 +102,9 @@ export async function deleteScheduleItem(
   itemId: string,
 ): Promise<ActionResult> {
   const owner = await requireOwner()
+  // The demo organization is shared: its published schedule must stay intact.
+  if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
+
   const item = await prisma.scheduleItem.findFirst({
     where: { id: itemId, organizationId: owner.organizationId },
   })

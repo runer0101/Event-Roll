@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import prisma from '@/lib/prisma'
+import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
 import { requireOwner } from '@/lib/session'
 import { getEventForOwner } from '@/lib/queries/events'
 import { EventSchema, EventStatusSchema } from '@/lib/validations/events'
@@ -86,6 +87,10 @@ export async function setEventStatus(
 
 export async function deleteEvent(eventId: string): Promise<ActionResult> {
   const owner = await requireOwner()
+  // The demo organization is shared with every visitor: deleting its event
+  // would leave the published demo empty for everyone else.
+  if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
+
   const event = await getEventForOwner(eventId, owner.organizationId)
   if (!event) return { error: 'Evento no encontrado' }
 

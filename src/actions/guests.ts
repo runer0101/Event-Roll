@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { auth } from '@/auth'
 import prisma from '@/lib/prisma'
+import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
 import { requireOwner } from '@/lib/session'
 import { getEventForOwner } from '@/lib/queries/events'
 import { getActiveStaff } from '@/lib/queries/staff'
@@ -122,6 +123,9 @@ export async function updateGuest(
 
 export async function deleteGuest(guestId: string): Promise<ActionResult> {
   const owner = await requireOwner()
+  // The demo organization is shared: deleting guests would empty the demo.
+  if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
+
   const guest = await prisma.guest.findFirst({
     where: { id: guestId, organizationId: owner.organizationId },
   })

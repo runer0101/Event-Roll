@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import prisma from '@/lib/prisma'
+import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
 import { requireOwner } from '@/lib/session'
 import { getEventForOwner } from '@/lib/queries/events'
 import { generateStaffCode } from '@/lib/utils'
@@ -85,6 +86,9 @@ export async function regenerateStaffCode(
   staffId: string,
 ): Promise<ActionResult> {
   const owner = await requireOwner()
+  // Rotating a code would invalidate the codes the demo publishes.
+  if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
+
   const staff = await prisma.staff.findFirst({
     where: { id: staffId, organizationId: owner.organizationId },
   })
@@ -109,6 +113,9 @@ export async function setStaffActive(
   active: boolean,
 ): Promise<ActionResult> {
   const owner = await requireOwner()
+  // Deactivating the demo team would lock every visitor out of the demo.
+  if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
+
   const staff = await prisma.staff.findFirst({
     where: { id: staffId, organizationId: owner.organizationId },
   })
