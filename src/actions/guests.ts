@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateEvent } from '@/lib/revalidate'
 import { auth } from '@/auth'
 import prisma from '@/lib/prisma'
 import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
@@ -61,7 +61,7 @@ export async function createGuest(
     },
   })
 
-  revalidatePath(`/dashboard/events/${event.id}`, 'layout')
+  revalidateEvent(event.id)
   return { success: true, guestId: guest.id }
 }
 
@@ -120,8 +120,7 @@ export async function updateGuest(
     },
   })
 
-  revalidatePath(`/dashboard/events/${guest.eventId}`, 'layout')
-  revalidatePath(`/staff/event/${guest.eventId}`, 'layout')
+  revalidateEvent(guest.eventId)
   return { success: true, guestId: guest.id }
 }
 
@@ -139,7 +138,7 @@ export async function deleteGuest(guestId: string): Promise<ActionResult> {
   if (!guest) return { error: 'Invitado no encontrado' }
 
   await prisma.guest.delete({ where: { id: guest.id } })
-  revalidatePath(`/dashboard/events/${guest.eventId}`, 'layout')
+  revalidateEvent(guest.eventId)
   return { success: true }
 }
 
@@ -219,6 +218,6 @@ export async function importGuests(
     { timeout: 15_000 },
   )
 
-  revalidatePath(`/dashboard/events/${event.id}`, 'layout')
+  revalidateEvent(event.id)
   return { success: true, imported: result.imported, skipped: result.skipped }
 }

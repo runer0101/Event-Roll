@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateEvent } from '@/lib/revalidate'
 import { auth } from '@/auth'
 import prisma from '@/lib/prisma'
 import { searchGuestsForStaff } from '@/lib/queries/guests'
@@ -121,9 +121,7 @@ export async function checkInGuest(guestId: string): Promise<ActionResult> {
       alreadyCheckedIn: true,
     }
   }
-
-  revalidatePath(`/staff/event/${staff.eventId}`, 'layout')
-  revalidatePath(`/dashboard/events/${staff.eventId}`, 'layout')
+  revalidateEvent(staff.eventId)
   return { success: true }
 }
 
@@ -193,8 +191,6 @@ export async function undoCheckIn(guestId: string): Promise<ActionResult> {
   if (!undone) {
     return { error: 'Ese invitado ya no tiene una entrada activa' }
   }
-
-  revalidatePath(`/staff/event/${guest.eventId}`, 'layout')
-  revalidatePath(`/dashboard/events/${guest.eventId}`, 'layout')
+  revalidateEvent(guest.eventId)
   return { success: true }
 }
