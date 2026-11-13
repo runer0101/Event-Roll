@@ -1,14 +1,14 @@
 import Link from "next/link";
-import { Fragment, type CSSProperties } from "react";
-import { ArrowRight } from "lucide-react";
-import { GoldParticles } from "@/components/motion/gold-particles";
+import type { CSSProperties } from "react";
 import { Magnetic } from "@/components/motion/magnetic";
-import { SpotlightCard } from "@/components/motion/spotlight-card";
 import { buttonClasses } from "@/components/ui/button";
-import { NerdGlyph, type NerdGlyphName } from "@/components/ui/nerd-glyph";
+
+/** One ring for every link on this page; the buttons already bring their own. */
+const focusRing =
+  "rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 focus-visible:ring-offset-4 focus-visible:ring-offset-stone-950";
 
 const features: Array<{
-  glyph: NerdGlyphName;
+  glyph: string;
   title: string;
   text: string;
 }> = [
@@ -30,12 +30,12 @@ const features: Array<{
   {
     glyph: "accessPoint",
     title: "Todo en vivo",
-    text: "El organizador ve cada entrada al instante: invitado, hora y qué guardia lo validó.",
+    text: "El organizador ve cada entrada al instante: invitado, hora y qué asistente lo validó.",
   },
   {
     glyph: "qrScan",
-    title: "Check-in atómico",
-    text: "Una entrada solo puede marcarse una vez. Si dos guardias la validan a la vez, uno recibe el aviso.",
+    title: "Sin dobles entradas",
+    text: "Una entrada solo puede marcarse una vez. Si dos asistentes la validan a la vez, uno recibe el aviso.",
   },
   {
     glyph: "calendarCheck",
@@ -68,7 +68,7 @@ const steps = [
   {
     number: "03",
     title: "Controla la puerta",
-    text: "Los guardias buscan al invitado y marcan la entrada. Tú lo ves en vivo desde el panel.",
+    text: "Los asistentes buscan al invitado y marcan la entrada. Tú lo ves en vivo desde el panel.",
   },
   {
     number: "04",
@@ -77,14 +77,29 @@ const steps = [
   },
 ];
 
+const problems = [
+  {
+    number: "01",
+    text: "La lista vive en tres archivos y nadie sabe cuál es el bueno.",
+  },
+  {
+    number: "02",
+    text: "El asistente marca entradas en una libreta y el organizador se entera tarde.",
+  },
+  {
+    number: "03",
+    text: "Cada ayudante ve información que no debería ver.",
+  },
+];
+
 const roles: Array<{
-  glyph: NerdGlyphName;
+  glyph: string;
   title: string;
   text: string;
 }> = [
   {
     glyph: "accountGroup",
-    title: "Organizador root",
+    title: "Organizador",
     text: "Control total: evento, lista, equipo, permisos y accesos. Es el único que puede cerrar o borrar el evento.",
   },
   {
@@ -94,7 +109,7 @@ const roles: Array<{
   },
   {
     glyph: "doorOpen",
-    title: "Guardias",
+    title: "Asistentes de puerta",
     text: "Entran con su código, buscan al invitado y marcan la entrada. Sin acceso al resto del evento.",
   },
   {
@@ -104,72 +119,16 @@ const roles: Array<{
   },
 ];
 
-const marquee = [
-  "Puerta",
-  "Coordinación",
-  "Cocina",
-  "Música",
-  "Decoración",
-  "Invitados",
-  "Mesas",
-  "Cronograma",
-];
-
-function HeroWords({
-  text,
-  start,
-  gold = false,
-}: {
-  text: string;
-  start: number;
-  gold?: boolean;
-}) {
-  return (
-    <>
-      {text.split(" ").map((word, index) => (
-        <Fragment key={`${word}-${index}`}>
-          <span
-            className={`hero-word ${gold ? "text-gold" : ""}`}
-            style={{ animationDelay: `${start + index * 55}ms` }}
-          >
-            {word}
-          </span>{" "}
-        </Fragment>
-      ))}
-    </>
-  );
-}
-
-/** Pure-CSS landing intro: two ink panels part like a door. */
-function DoorIntro() {
-  return (
-    <div aria-hidden className="door-intro">
-      <div className="door-panel door-panel-left" />
-      <div className="door-panel door-panel-right" />
-      <span className="door-seam" />
-      <span className="door-mark">
-        <NerdGlyph
-          name="doorOpen"
-          className="text-gold text-[clamp(2.2rem,7vw,3.4rem)]"
-        />
-      </span>
-    </div>
-  );
-}
-
+/** Wordmark: type only, no badge, no glyph. */
 function Wordmark({ compact = false }: { compact?: boolean }) {
   return (
-    <Link href="/" className="group flex items-center gap-2.5">
-      <span className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-amber-300/40 bg-gradient-to-b from-amber-200 to-amber-500 text-stone-950 shadow-[0_8px_24px_-12px_rgba(212,175,55,0.8)] transition-transform duration-500 group-hover:rotate-3">
-        <NerdGlyph name="ticket" className="text-[1.2rem]" />
-      </span>
+    <Link href="/" className={`flex items-baseline ${focusRing}`}>
       <span
         className={`font-display font-semibold tracking-tight text-stone-50 ${
           compact ? "text-lg" : "text-xl"
         }`}
       >
-        Event-Roll
-        <span className="text-amber-400">.</span>
+        Event-Roll<span className="text-stone-400">.</span>
       </span>
     </Link>
   );
@@ -179,19 +138,26 @@ function NavLink({ href, children }: { href: string; children: string }) {
   return (
     <a
       href={href}
-      className="group relative text-sm text-stone-300 transition-colors hover:text-amber-100"
+      className={`group relative text-sm text-stone-300 transition-colors hover:text-amber-100 ${focusRing}`}
     >
       {children}
-      <span className="absolute -bottom-1.5 left-0 h-px w-0 bg-gradient-to-r from-amber-400 to-transparent transition-all duration-300 group-hover:w-full" />
+      <span className="absolute -bottom-1.5 left-0 h-px w-0 bg-stone-400 transition-all duration-300 group-hover:w-full" />
     </a>
+  );
+}
+
+/** Mono label used where the old eyebrow used to sit; no pill, no amber caps. */
+function SectionIndex({ children }: { children: string }) {
+  return (
+    <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-stone-400">
+      {children}
+    </span>
   );
 }
 
 export default function HomePage() {
   return (
     <div className="min-h-svh overflow-x-hidden bg-stone-950">
-      <DoorIntro />
-
       <header
         className="intro-rise sticky top-0 z-40 border-b border-white/5 bg-stone-950/70 backdrop-blur-xl"
         style={{ "--intro-delay": "280ms" } as CSSProperties}
@@ -208,53 +174,37 @@ export default function HomePage() {
           <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className="hidden rounded-xl px-3 py-2 text-sm font-medium text-stone-300 transition hover:text-amber-100 sm:block"
+              className={`hidden px-3 py-2 text-sm font-medium text-stone-300 transition hover:text-amber-100 sm:block ${focusRing}`}
             >
               Entrar
             </Link>
             <Link href="/register" className={buttonClasses("primary", "sm")}>
               Crear cuenta
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden />
             </Link>
           </div>
         </div>
       </header>
 
+      <div aria-hidden className="rule-draw h-px bg-stone-800" />
+
       <section className="relative isolate overflow-hidden">
-        <div aria-hidden className="absolute inset-0 -z-10">
-          <div className="rays absolute left-1/2 top-[-38rem] h-[78rem] w-[78rem] -translate-x-1/2 opacity-70" />
-          <GoldParticles count={48} />
-          <div className="absolute -right-40 top-10 h-[28rem] w-[28rem] rounded-full bg-amber-500/10 blur-3xl" />
-          <div className="absolute -left-40 bottom-0 h-[24rem] w-[24rem] rounded-full bg-amber-300/5 blur-3xl" />
-        </div>
-
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 pb-16 pt-10 sm:gap-16 sm:px-6 sm:pb-24 sm:pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-12 lg:px-8 lg:pb-32 lg:pt-20">
+        <div aria-hidden className="hero-grid -z-10" />
+        <div className="mx-auto flex max-w-3xl flex-col items-center px-4 pb-16 pt-14 text-center sm:px-6 sm:pb-20 sm:pt-16 lg:pb-24 lg:pt-20">
           <div>
-            <span
-              className="intro-rise inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/5 px-3.5 py-1.5 text-[11px] font-medium uppercase tracking-[0.2em] text-amber-200"
-              style={{ "--intro-delay": "300ms" } as CSSProperties}
-            >
-              <NerdGlyph
-                name="accessPoint"
-                className="text-[0.95rem] text-amber-300"
-              />
-              Control de acceso en vivo
-            </span>
-
-            <h1 className="mt-7 font-display text-[clamp(2.4rem,8.7vw,4.6rem)] font-medium leading-[0.98] text-stone-50">
-              <span className="block">
-                <HeroWords text="Cada invitado," start={340} />
+            <h1 className="font-display text-[clamp(2.2rem,6.2vw,4.2rem)] font-medium leading-[1.02] text-stone-50">
+              <span className="line-mask">
+                <span style={{ "--i": 0 } as CSSProperties}>Cada invitado,</span>
               </span>
-              <span className="block">
-                <HeroWords text="una entrada," start={470} />
+              <span className="line-mask">
+                <span style={{ "--i": 1 } as CSSProperties}>una entrada,</span>
               </span>
-              <span className="block italic">
-                <HeroWords text="todo en vivo." start={600} gold />
+              <span className="line-mask">
+                <span style={{ "--i": 2 } as CSSProperties}>todo en vivo.</span>
               </span>
             </h1>
 
             <p
-              className="intro-rise mt-6 max-w-xl text-pretty text-base leading-relaxed text-stone-300 sm:text-lg"
+              className="intro-rise mx-auto mt-6 max-w-xl text-pretty text-base leading-relaxed text-stone-300 sm:text-lg"
               style={{ "--intro-delay": "500ms" } as CSSProperties}
             >
               Importa el Excel del cliente, asigna un código a cada miembro del
@@ -263,7 +213,7 @@ export default function HomePage() {
             </p>
 
             <div
-              className="intro-rise mt-9 flex flex-wrap items-center gap-3"
+              className="intro-rise mt-9 flex flex-wrap items-center justify-center gap-x-8 gap-y-4"
               style={{ "--intro-delay": "580ms" } as CSSProperties}
             >
               <Magnetic>
@@ -272,321 +222,90 @@ export default function HomePage() {
                   className={buttonClasses("primary", "lg", "px-7")}
                 >
                   Empezar gratis
-                  <ArrowRight className="h-4 w-4" aria-hidden />
                 </Link>
               </Magnetic>
               <Link
                 href="/staff"
-                className={buttonClasses("outline", "lg", "px-7")}
+                className={`text-sm font-medium text-stone-300 underline decoration-stone-500 underline-offset-4 transition hover:text-stone-50 hover:decoration-stone-300 ${focusRing}`}
               >
-                Entrar como guardia
+                Entrar como asistente
               </Link>
             </div>
-
-            <div
-              className="intro-rise mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-stone-400"
-              style={{ "--intro-delay": "650ms" } as CSSProperties}
-            >
-              <span className="flex items-center gap-2">
-                <NerdGlyph name="checkCircle" className="text-[0.9rem] text-amber-400" />
-                Sin tarjeta
-              </span>
-              <span className="flex items-center gap-2">
-                <NerdGlyph name="checkCircle" className="text-[0.9rem] text-amber-400" />
-                Demo con datos incluida
-              </span>
-              <span className="flex items-center gap-2">
-                <NerdGlyph name="checkCircle" className="text-[0.9rem] text-amber-400" />
-                Códigos únicos por persona
-              </span>
-            </div>
           </div>
 
-          <div
-            className="intro-panel relative mx-auto w-full max-w-lg lg:max-w-none"
-            style={{ "--intro-delay": "420ms" } as CSSProperties}
-          >
-            <div className="absolute -inset-4 rounded-[2.2rem] bg-gradient-to-br from-amber-400/15 via-transparent to-amber-300/5 blur-2xl" />
-
-            <div className="relative rounded-[1.85rem] bg-gradient-to-b from-amber-300/35 via-stone-700/30 to-transparent p-px shadow-[0_40px_120px_-50px_rgba(0,0,0,1)]">
-              <div className="relative overflow-hidden rounded-[1.8rem] border border-stone-800/80 bg-stone-950/90 p-5 backdrop-blur-xl sm:p-6">
-                <span
-                  aria-hidden
-                  className="scan-line pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-amber-300/70 to-transparent"
-                />
-
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="eyebrow">Evento en vivo</p>
-                    <p className="mt-2 font-display text-2xl font-semibold text-stone-50">
-                      Sunset Fest 2026
-                    </p>
-                    <p className="mt-1 flex items-center gap-1.5 text-xs text-stone-400">
-                      <NerdGlyph name="mapMarker" className="text-[0.9rem]" />
-                      Plaza Mayor · Puerta principal
-                    </p>
-                  </div>
-                  <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-emerald-200">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 pulse-gold" />
-                    En vivo
-                  </span>
-                </div>
-
-                <div className="mt-6 flex items-center gap-4 rounded-2xl border border-stone-800/80 bg-stone-900/40 p-4 sm:gap-5">
-                  <div className="relative h-20 w-20 shrink-0 sm:h-24 sm:w-24">
-                    <svg
-                      viewBox="0 0 120 120"
-                      className="h-20 w-20 -rotate-90 sm:h-24 sm:w-24"
-                      aria-hidden
-                    >
-                      <circle
-                        cx="60"
-                        cy="60"
-                        r="52"
-                        fill="none"
-                        stroke="rgba(255,255,255,0.07)"
-                        strokeWidth="7"
-                      />
-                      <circle
-                        cx="60"
-                        cy="60"
-                        r="52"
-                        fill="none"
-                        stroke="url(#gold-ring)"
-                        strokeWidth="7"
-                        strokeLinecap="round"
-                        strokeDasharray={2 * Math.PI * 52}
-                        strokeDashoffset={2 * Math.PI * 52 * (1 - 0.68)}
-                      />
-                      <defs>
-                        <linearGradient
-                          id="gold-ring"
-                          x1="0"
-                          y1="0"
-                          x2="1"
-                          y2="1"
-                        >
-                          <stop offset="0%" stopColor="#f6e3a1" />
-                          <stop offset="55%" stopColor="#d4af37" />
-                          <stop offset="100%" stopColor="#8f6d1f" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="font-display text-2xl font-semibold text-stone-50">
-                        68%
-                      </span>
-                      <span className="text-[9px] uppercase tracking-[0.18em] text-stone-400">
-                        Avance
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="grid flex-1 grid-cols-3 gap-2">
-                    {[
-                      { label: "Invitados", value: "128" },
-                      { label: "Dentro", value: "87" },
-                      { label: "Pendientes", value: "41" },
-                    ].map((stat) => (
-                      <div key={stat.label}>
-                        <p className="text-[9px] uppercase tracking-[0.16em] text-stone-400">
-                          {stat.label}
-                        </p>
-                        <p className="mt-1 font-display text-xl font-semibold text-stone-50">
-                          {stat.value}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-5 space-y-2">
-                  {[
-                    {
-                      name: "Lucía Fernández",
-                      meta: "VIP · 2 acompañantes",
-                      time: "20:41",
-                      guard: "Carla",
-                    },
-                    {
-                      name: "Mateo Ríos",
-                      meta: "General",
-                      time: "20:39",
-                      guard: "Carla",
-                    },
-                    {
-                      name: "Ana Vega",
-                      meta: "Prensa",
-                      time: "20:37",
-                      guard: "Diego",
-                    },
-                  ].map((entry, index) => (
-                    <div
-                      key={entry.name}
-                      className="animate-fade-up flex items-center gap-3 rounded-xl border border-stone-800/80 bg-stone-900/40 px-3 py-2.5"
-                      style={{ animationDelay: `${400 + index * 110}ms` }}
-                    >
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-400/10 text-emerald-300 ring-1 ring-emerald-400/20">
-                        <NerdGlyph name="checkCircle" className="text-[1rem]" />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-stone-50">
-                          {entry.name}
-                        </p>
-                        <p className="truncate text-[11px] text-stone-400">
-                          {entry.meta} · {entry.guard}
-                        </p>
-                      </div>
-                      <span className="flex items-center gap-1 text-[11px] tabular-nums text-stone-500">
-                        <NerdGlyph name="clock" className="text-[0.75rem]" />
-                        {entry.time}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-5 flex items-center justify-between border-t border-stone-800/70 pt-4 text-[11px] text-stone-400">
-                  <span className="flex items-center gap-1.5">
-                    <NerdGlyph
-                      name="accessPoint"
-                      className="text-[0.9rem] text-amber-300"
-                    />
-                    Actualizado cada 3 s
-                  </span>
-                  <span className="font-mono text-[10px] text-stone-500">
-                    STF-GUARD01
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="absolute -left-4 -top-4 hidden items-center gap-2 rounded-full border border-amber-400/20 bg-stone-950/90 px-3 py-1.5 text-[11px] text-amber-100 shadow-xl backdrop-blur sm:flex">
-              <NerdGlyph
-                name="shieldCheck"
-                className="text-[0.9rem] text-amber-300"
-              />
-              Check-in atómico
-            </div>
-            <div className="animate-float-slow absolute -bottom-5 -right-4 hidden items-center gap-2 rounded-full border border-stone-700/70 bg-stone-950/90 px-3 py-1.5 text-[11px] text-stone-200 shadow-xl backdrop-blur sm:flex">
-              <NerdGlyph
-                name="doorOpen"
-                className="text-[0.9rem] text-emerald-300"
-              />
-              87 dentro · 41 pendientes
-            </div>
-          </div>
         </div>
       </section>
 
-      <div className="marquee relative overflow-hidden border-y border-stone-800/70 bg-stone-950/60 py-4">
-        <div className="marquee-track flex w-max items-center gap-10 whitespace-nowrap">
-          {[...marquee, ...marquee].map((item, index) => (
-            <span
-              key={`${item}-${index}`}
-              className="flex items-center gap-10 text-[10px] uppercase tracking-[0.32em] text-stone-500"
-            >
-              {item}
-              <NerdGlyph name="sparkle" className="text-[9px] text-amber-400/70" />
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
-        <div
-          data-reveal
-          className="surface relative overflow-hidden p-8 sm:p-12"
-        >
-          <div
-            aria-hidden
-            className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-amber-400/10 blur-3xl"
-          />
-          <div className="relative grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
-            <div>
-              <p className="eyebrow">El problema</p>
-              <h2 className="mt-4 font-display text-4xl font-medium leading-tight text-stone-50 sm:text-5xl">
-                El Excel funciona
-                <span className="block italic text-gold">
-                  hasta que llega la puerta.
-                </span>
-              </h2>
+      <section className="relative border-b border-stone-800/70 bg-stone-900/40">
+        <div className="grid gap-10 px-4 py-14 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-20 lg:px-16 lg:py-20 xl:px-24">
+          <div data-reveal className="lg:sticky lg:top-28 lg:self-start">
+            <div className="flex items-center gap-4">
+              <span aria-hidden className="h-px flex-1 bg-stone-800" />
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-stone-400">
+                El problema
+              </span>
             </div>
-            <div className="grid gap-4 sm:grid-cols-3">
-              {[
-                {
-                  number: "01",
-                  text: "La lista vive en tres archivos y nadie sabe cuál es el bueno.",
-                },
-                {
-                  number: "02",
-                  text: "El guardia marca entradas en una libreta y el organizador se entera tarde.",
-                },
-                {
-                  number: "03",
-                  text: "Cada ayudante ve información que no debería ver.",
-                },
-              ].map((problem, index) => (
-                <div
-                  key={problem.number}
-                  data-reveal
-                  style={
-                    {
-                      "--reveal-delay": `${index * 90}ms`,
-                    } as CSSProperties
-                  }
-                  className="rounded-2xl border border-stone-800/80 bg-stone-950/50 p-5"
-                >
-                  <span className="font-display text-2xl text-amber-400">
-                    {problem.number}
-                  </span>
-                  <p className="mt-3 text-sm leading-relaxed text-stone-300">
-                    {problem.text}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section
-        id="como-funciona"
-        className="border-y border-stone-800/70 bg-stone-900/30"
-      >
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
-          <div data-reveal className="max-w-2xl">
-            <p className="eyebrow">Cómo funciona</p>
-            <h2 className="mt-4 font-display text-4xl font-medium leading-tight text-stone-50 sm:text-5xl">
-              De la lista del cliente a la puerta,
-              <span className="italic text-gold"> en cuatro pasos.</span>
+            <h2 className="mt-8 max-w-lg text-balance font-display text-[clamp(1.8rem,3.4vw,2.9rem)] font-medium leading-[1.05] text-stone-50">
+              El Excel funciona
+              <span className="mt-2 block text-stone-400">
+                hasta que llega la puerta.
+              </span>
             </h2>
           </div>
 
-          <div className="relative mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-            <span
-              aria-hidden
-              className="absolute left-0 right-0 top-9 hidden h-px bg-gradient-to-r from-transparent via-amber-400/25 to-transparent lg:block"
-            />
-            {steps.map((step, index) => (
+          <ol className="border-t border-stone-800/70">
+            {problems.map((problem) => (
+              <li
+                key={problem.number}
+                className="row-accent group flex items-baseline gap-5 border-b border-stone-800/70 py-5 sm:gap-8 sm:py-6"
+              >
+                <span className="font-display text-3xl font-medium leading-none tabular-nums text-stone-700 transition-colors duration-300 group-hover:text-amber-300 sm:text-4xl">
+                  {problem.number}
+                </span>
+                <p className="max-w-md text-sm leading-relaxed text-stone-300 transition-colors duration-300 group-hover:text-stone-100 sm:text-base">
+                  {problem.text}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section id="como-funciona" className="relative scroll-mt-24">
+        <div className="mx-auto max-w-[92rem] px-4 py-16 sm:px-6 lg:px-10 lg:py-24">
+          <div
+            data-reveal
+            className="flex flex-col gap-5 border-t border-stone-800/70 pt-8 lg:flex-row lg:items-end lg:justify-between"
+          >
+            <h2 className="max-w-2xl text-balance font-display text-[clamp(1.9rem,4vw,3rem)] font-medium leading-[1.05] text-stone-50">
+              De la lista del cliente a la puerta,
+              <span className="text-stone-400"> en cuatro pasos.</span>
+            </h2>
+            <SectionIndex>Cómo funciona</SectionIndex>
+          </div>
+
+          <div
+            data-reveal="clip"
+            className="mt-12 grid gap-px border border-stone-800/70 bg-stone-800/70 sm:grid-cols-2 lg:grid-cols-4"
+          >
+            {steps.map((step) => (
               <div
                 key={step.number}
-                data-reveal
-                style={
-                  {
-                    "--reveal-delay": `${index * 80}ms`,
-                  } as CSSProperties
-                }
-                className="group relative"
+                className="group relative overflow-hidden bg-stone-950 p-6 transition-colors duration-300 hover:bg-stone-900/70 sm:p-8"
               >
-                <span className="relative z-10 flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-400/25 bg-stone-950 font-display text-2xl text-amber-300 shadow-[0_0_40px_-18px_rgba(212,175,55,0.8)] transition-transform duration-500 group-hover:-translate-y-1">
+                <span className="font-mono text-[11px] tabular-nums text-stone-500 transition-colors duration-300 group-hover:text-amber-300">
                   {step.number}
                 </span>
-                <h3 className="mt-5 font-display text-2xl font-medium text-stone-50">
+                <h3 className="relative mt-3 font-display text-xl font-medium text-stone-50">
                   {step.title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-stone-300">
+                <p className="relative mt-2 max-w-sm text-sm leading-relaxed text-stone-300">
                   {step.text}
                 </p>
+                <span
+                  aria-hidden
+                  className="absolute bottom-0 left-0 h-px w-0 bg-stone-400 transition-all duration-500 group-hover:w-full"
+                />
               </div>
             ))}
           </div>
@@ -595,44 +314,33 @@ export default function HomePage() {
 
       <section
         id="funciones"
-        className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28"
+        className="mx-auto max-w-[92rem] scroll-mt-24 px-4 py-16 sm:px-6 lg:px-10 lg:py-24"
       >
-        <div data-reveal className="max-w-2xl">
-          <p className="eyebrow">Funciones</p>
-          <h2 className="mt-4 font-display text-4xl font-medium leading-tight text-stone-50 sm:text-5xl">
+        <div data-reveal className="relative border-t border-stone-800/70 pt-8">
+          <h2 className="relative max-w-3xl text-balance font-display text-[clamp(1.9rem,4vw,3rem)] font-medium leading-[1.05] text-stone-50">
             Todo lo que pasa en la puerta,
-            <span className="italic text-gold"> sin planillas paralelas.</span>
+            <span className="text-stone-400"> sin planillas paralelas.</span>
           </h2>
         </div>
 
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid border-t border-stone-800/70 sm:grid-cols-2">
           {features.map((feature, index) => (
-            <SpotlightCard
+            <div
               key={feature.title}
-              className="group card-hover rounded-2xl border border-stone-800/80 bg-stone-900/40 p-5"
+              className="row-accent group border-b border-stone-800/70 px-5 py-7"
             >
-              <div
-                data-reveal
-                style={
-                  {
-                    "--reveal-delay": `${(index % 4) * 70}ms`,
-                  } as CSSProperties
-                }
-              >
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-amber-400/20 bg-gradient-to-b from-amber-400/15 to-transparent text-amber-200 transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:rotate-3">
-                  <NerdGlyph
-                    name={feature.glyph}
-                    className="text-[1.35rem]"
-                  />
-                </span>
-                <h3 className="mt-4 font-display text-xl font-medium text-stone-50">
+              <div className="flex items-baseline justify-between gap-4">
+                <h3 className="font-display text-xl font-medium text-stone-50">
                   {feature.title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-stone-300">
-                  {feature.text}
-                </p>
+                <span className="font-mono text-[10px] tabular-nums text-stone-600 transition-colors duration-300 group-hover:text-amber-300/80">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
               </div>
-            </SpotlightCard>
+              <p className="mt-2 max-w-sm text-sm leading-relaxed text-stone-400">
+                {feature.text}
+              </p>
+            </div>
           ))}
         </div>
       </section>
@@ -641,93 +349,80 @@ export default function HomePage() {
         id="roles"
         className="border-y border-stone-800/70 bg-stone-900/30"
       >
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
-          <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
-            <div data-reveal>
-              <p className="eyebrow">Roles</p>
-              <h2 className="mt-4 font-display text-4xl font-medium leading-tight text-stone-50 sm:text-5xl">
-                Cada persona ve exactamente
-                <span className="italic text-gold"> lo que necesita.</span>
-              </h2>
-              <p className="mt-5 max-w-lg text-sm leading-relaxed text-stone-300">
-                El organizador principal es el root: controla permisos, equipo y
-                accesos. Los ayudantes y guardias solo ven la parte que les toca,
-                con un código único por persona.
-              </p>
-              <div className="mt-8 flex items-center gap-3 text-xs text-stone-400">
-                <span className="h-px w-10 bg-amber-400/50" />
-                Un código no abre el evento de otro.
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              {roles.map((role, index) => (
-                <div
-                  key={role.title}
-                  data-reveal
-                  style={
-                    {
-                      "--reveal-delay": `${index * 80}ms`,
-                    } as CSSProperties
-                  }
-                  className="card-hover rounded-2xl border border-stone-800/80 bg-stone-950/50 p-6"
-                >
-                  <div className="flex items-center justify-between">
-                    <NerdGlyph
-                      name={role.glyph}
-                      className="text-[1.35rem] text-amber-300"
-                    />
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-stone-600">
-                      0{index + 1}
-                    </span>
-                  </div>
-                  <h3 className="mt-4 font-display text-xl font-medium text-stone-50">
-                    {role.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-stone-300">
-                    {role.text}
-                  </p>
-                </div>
-              ))}
+        <div className="grid gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-start lg:gap-16 lg:px-10 lg:py-24">
+          <div data-reveal className="lg:sticky lg:top-28">
+            <SectionIndex>Roles</SectionIndex>
+            <h2 className="mt-5 text-balance font-display text-[clamp(1.9rem,4vw,3rem)] font-medium leading-[1.05] text-stone-50">
+              Cada persona ve exactamente
+              <span className="text-stone-400"> lo que necesita.</span>
+            </h2>
+            <p className="mt-5 max-w-lg text-sm leading-relaxed text-stone-300">
+              Usted organiza: la lista, el equipo y quién puede entrar. Los
+              ayudantes y asistentes solo ven la parte que les toca, con un
+              código único por persona.
+            </p>
+            <div className="mt-8 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-400">
+              <span aria-hidden className="h-px w-10 bg-amber-400/50" />
+              Un código no abre el evento de otro.
             </div>
           </div>
+
+          <ul className="border-y border-stone-800/70">
+            {roles.map((role, index) => (
+              <li
+                key={role.title}
+                data-reveal
+                style={{ "--reveal-delay": `${index * 70}ms` } as CSSProperties}
+                className="row-accent group border-b border-stone-800/70 last:border-b-0"
+              >
+                <div className="flex items-start gap-4 px-4 py-6 sm:gap-6 sm:px-6">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <h3 className="font-display text-xl font-medium text-stone-50">
+                        {role.title}
+                      </h3>
+                      <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-stone-600 transition-colors duration-300 group-hover:text-amber-300/70">
+                        0{index + 1}
+                      </span>
+                    </div>
+                    <p className="mt-2 max-w-xl text-sm leading-relaxed text-stone-300">
+                      {role.text}
+                    </p>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
+      {/* The page ends in one inverted band: flat amber, black type, no glow. */}
+      <section className="border-b border-amber-500/30 bg-amber-300 text-stone-950">
         <div
-          data-reveal
-          className="relative overflow-hidden rounded-[2rem] border border-amber-400/20 bg-gradient-to-br from-amber-400/10 via-stone-900/60 to-stone-950 px-8 py-14 sm:px-14 sm:py-20"
+          data-reveal="clip"
+          className="px-4 py-16 sm:px-8 lg:px-16 lg:py-24 xl:px-24"
         >
-          <div aria-hidden className="absolute inset-0">
-            <div className="rays absolute -top-72 left-1/2 h-[48rem] w-[48rem] -translate-x-1/2 opacity-60" />
-            <GoldParticles count={26} />
-          </div>
-          <div className="relative flex flex-col items-start justify-between gap-9 lg:flex-row lg:items-center">
+          <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
             <div className="max-w-xl">
-              <p className="eyebrow">Tu próximo evento</p>
-              <h2 className="mt-4 font-display text-4xl font-medium leading-tight text-stone-50 sm:text-5xl">
+              <h2 className="text-balance font-display text-[clamp(2.1rem,5vw,3.8rem)] font-medium leading-[1.02]">
                 Empieza con una lista
-                <span className="italic text-gold"> ordenada.</span>
+                <span className="mt-1 block text-stone-950/60">ordenada.</span>
               </h2>
-              <p className="mt-4 text-sm leading-relaxed text-stone-300">
+              <p className="mt-5 max-w-md text-sm leading-relaxed text-stone-900/80">
                 Crea tu cuenta, importa el Excel y comparte el primer código con
                 tu equipo. En menos de cinco minutos.
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <Magnetic strength={10}>
-                <Link
-                  href="/register"
-                  className={buttonClasses("primary", "lg", "px-7")}
-                >
-                  Crear mi cuenta
-                  <ArrowRight className="h-4 w-4" aria-hidden />
-                </Link>
-              </Magnetic>
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-4 lg:pb-2">
+              <Link
+                href="/register"
+                className={`inline-flex h-12 items-center rounded-sm bg-stone-950 px-7 text-base font-medium text-stone-50 transition hover:bg-stone-800 ${focusRing}`}
+              >
+                Crear mi cuenta
+              </Link>
               <Link
                 href="/login"
-                className={buttonClasses("outline", "lg", "px-7")}
+                className={`text-sm font-medium underline decoration-stone-950/40 underline-offset-4 transition hover:decoration-stone-950 ${focusRing}`}
               >
                 Ya tengo cuenta
               </Link>
@@ -737,7 +432,7 @@ export default function HomePage() {
       </section>
 
       <footer className="border-t border-stone-800/70 bg-stone-950/80">
-        <div className="gold-rule" />
+        <div className="h-px bg-stone-800" />
         <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-5 px-4 py-10 text-sm text-stone-400 sm:flex-row sm:items-center sm:px-6 lg:px-8">
           <div className="flex items-center gap-4">
             <Wordmark compact />
@@ -747,11 +442,17 @@ export default function HomePage() {
             </p>
           </div>
           <div className="flex items-center gap-6 text-xs">
-            <Link href="/login" className="transition hover:text-amber-100">
+            <Link
+              href="/login"
+              className={`transition hover:text-amber-100 ${focusRing}`}
+            >
               Organizadores
             </Link>
-            <Link href="/staff" className="transition hover:text-amber-100">
-              Guardias
+            <Link
+              href="/staff"
+              className={`transition hover:text-amber-100 ${focusRing}`}
+            >
+              Asistentes
             </Link>
             <span className="text-stone-600">MIT</span>
           </div>
