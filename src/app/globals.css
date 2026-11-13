@@ -289,7 +289,21 @@
     transform: translate3d(0, 0, 0);
   }
   to {
-    transform: translate3d(-72px, -72px, 0);
+    transform: translate3d(-144px, -144px, 0);
+  }
+}
+
+/* A slow breath of light behind the headline, so the background is alive even
+   when the grid is between cells. Opacity only: no layout, no paint storm. */
+@keyframes halo-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.08);
   }
 }
 
@@ -659,10 +673,10 @@
     position: absolute;
     inset: -72px;
     background-image:
-      linear-gradient(to right, rgba(212, 175, 55, 0.09) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+      linear-gradient(to right, rgba(212, 175, 55, 0.16) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
     background-size: 72px 72px;
-    animation: grid-drift 26s linear infinite;
+    animation: grid-drift 14s linear infinite;
     -webkit-mask-image: radial-gradient(
       72% 70% at 50% 34%,
       black 20%,
@@ -671,11 +685,28 @@
     mask-image: radial-gradient(72% 70% at 50% 34%, black 20%, transparent 82%);
   }
 
-  /* Phones and tablets keep the grid still: the effect is decoration, the
-     battery is not. */
+  .hero-halo {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      42% 38% at 50% 30%,
+      rgba(212, 175, 55, 0.16),
+      transparent 72%
+    );
+    animation: halo-breathe 9s ease-in-out infinite;
+    filter: blur(18px);
+  }
+
+  /* Phones and tablets keep both still: the effect is decoration, the battery
+     is not. */
   @media (max-width: 900px) {
-    .hero-grid {
+    .hero-grid,
+    .hero-halo {
       animation: none;
+    }
+
+    .hero-halo {
+      opacity: 0.5;
     }
   }
 
@@ -760,7 +791,8 @@
 
   .line-mask > span,
   .rule-draw,
-  .hero-grid {
+  .hero-grid,
+  .hero-halo {
     transform: none !important;
     animation: none !important;
   }

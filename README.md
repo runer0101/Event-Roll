@@ -11,13 +11,13 @@
 
 ## The problem
 
-Small event organizers run the door with a spreadsheet, a WhatsApp group and a paper list. Nobody knows which copy is current, guards mark entries on paper, and the person in charge finds out about problems hours later. Every helper can see the whole list, including phone numbers they do not need.
+Small event organizers run the door with a spreadsheet, a WhatsApp group and a paper list. Nobody knows which copy is current, the door marks entries on paper, and the person in charge finds out about problems hours later. Every helper can see the whole list, including phone numbers they do not need.
 
 Event-Roll turns that into one live system:
 
 - The organizer imports the guest list and keeps it as the single source of truth.
 - Each helper gets a unique access code and only the permissions the organizer grants.
-- Guards search a guest and mark the entry; the root organizer sees it live, with the time and the guard who validated it.
+- Assistants search a guest and mark the entry; the organizer sees it live, with the time and who validated it.
 - Everything is scoped to the event: a code for event A cannot open event B.
 
 ## Features
@@ -29,26 +29,26 @@ Event-Roll turns that into one live system:
 - **Shared schedule** — tasks with a time, an assignee and a status; the organizer sees the full timeline and each member marks their tasks as done.
 - **Granular permissions** — contact data, guest editing, CSV export, undo check-in and live stats are toggles per helper, enforced on the server.
 - **Live dashboard** — tickets, pending guests, attendance rate, recent entries and staff activity refresh every 3 seconds.
-- **Atomic check-in** — a guest can only move `INVITED → CHECKED_IN` once, even if two guards tap at the same time. A rejected second attempt never creates a second entry.
+- **Atomic check-in** — a guest can only move `INVITED → CHECKED_IN` once, even if two assistants tap at the same time. A rejected second attempt never creates a second entry.
 - **Audit trail** — every check-in and undo is recorded with guest, staff member and timestamp.
 - **Event lifecycle** — close an event to stop check-ins, reopen it, or delete it with all its data.
-- **CSV export** — the organizer (or a helper with permission) downloads the current list; guards without contact permission get a version without emails or phones.
+- **CSV export** — the organizer (or a helper with permission) downloads the current list; assistants without contact permission get a version without emails or phones.
 - **Multi-tenant by design** — every query and mutation is scoped by `organizationId`; staff are additionally scoped by `eventId`.
 
 ## Roles
 
 | Role | Can do |
 | --- | --- |
-| **Organizer (root)** | Everything: events, guest list, import, tables, team, permissions, schedule, export, undo check-ins. |
-| **Coordinator** | Whatever the root grants: view contact data, edit guests, export, undo check-ins, see live stats. |
-| **Guard** | Enter with a code, search guests and mark entries. Contact data and editing are off by default. |
+| **Organizer** | Everything: events, guest list, import, tables, team, permissions, schedule, export, undo check-ins. |
+| **Coordinator** | Whatever the organizer grants: view contact data, edit guests, export, undo check-ins, see live stats. |
+| **Door assistant** | Enter with a code, search guests and mark entries. Contact data and editing are off by default. |
 | **Kitchen / music / decoration** | Enter with a code and see their own schedule, times and event information. No guest check-in by default. |
 
 ## How it works
 
 1. **Import the list.** Upload the client's Excel or CSV. The browser parses it, shows a preview and flags invalid or duplicated rows before anything is written.
 2. **Build the door team.** Create a helper, choose permissions and share the generated code.
-3. **Open the door.** The guard enters the code, finds the guest and marks the entry. The organizer's dashboard updates while the queue moves.
+3. **Open the door.** The assistant enters the code, finds the guest and marks the entry. The organizer's dashboard updates while the queue moves.
 4. **Prepare the room.** Create tables, mark chairs as occupied and assign timed tasks to the kitchen, music and decoration teams.
 
 ## Screenshots
@@ -60,10 +60,23 @@ Event-Roll turns that into one live system:
 | ![Guests](docs/screenshots/guests.png) | ![Tables](docs/screenshots/tables.png) |
 | **Schedule** | **Staff and roles** |
 | ![Schedule](docs/screenshots/schedule.png) | ![Staff](docs/screenshots/staff.png) |
-| **Guard screen (mobile)** | **Kitchen schedule (mobile)** |
-| ![Guard](docs/screenshots/guard.png) | ![Kitchen](docs/screenshots/staff-cook.png) |
+| **Assistant screen (mobile)** | **Kitchen schedule (mobile)** |
+| ![Assistant](docs/screenshots/guard.png) | ![Kitchen](docs/screenshots/staff-cook.png) |
 | **Landing** | |
 | ![Landing](docs/screenshots/landing.png) | |
+
+These images are generated by the Playwright visual suite, so they are refreshed with `pnpm test:e2e` after any interface change rather than by hand.
+
+## Interface
+
+The interface is deliberately plain: one hairline border per surface, no rounded cards, no blur, no gradient, no drop shadow and no decorative icon. Hierarchy comes from type, spacing and rules, so a screen with eight panels and a screen with one form still look like the same product.
+
+Two rules keep it honest:
+
+- **Motion has a source and a reason.** The headline rises line by line out of a clip mask and a hairline draws itself under the header, both adapted from the owner's animation library. A grid drifts behind the type on one compositor transform. No animation library is installed; every effect is CSS.
+- **It degrades on purpose.** Below 900px the background stops moving, `prefers-reduced-motion` freezes every entrance, and every route ships a `loading.tsx` that mirrors its real layout so a page never jumps from blank to full.
+
+Contrast, a visible focus ring and an announced loading state (`role="status"`) are part of the same rule set, not a later pass.
 
 ## Engineering highlights
 
@@ -104,7 +117,7 @@ src/
 ├── app/
 │   ├── (auth)/            login · register
 │   ├── dashboard/         organizer panel (overview, guests, tables, staff, schedule, settings)
-│   ├── staff/             code login + guard screen
+│   ├── staff/             code login + assistant screen
 │   └── api/               live feed · CSV export · Auth.js
 ├── components/            UI, live dashboard, import dialog, seating board, schedule manager
 └── lib/
@@ -150,9 +163,9 @@ The seed recreates the demo organization on every run.
 | Kitchen code | `STF-COOK01` |
 | Music code | `STF-MUSIC1` |
 | Decoration code | `STF-DECOR1` |
-| Dinner guard code | `STF-DINNER1` |
+| Dinner assistant code | `STF-DINNER1` |
 
-The guard screen is at `/staff`. The organizer panel is at `/dashboard`.
+The assistant screen is at `/staff`. The organizer panel is at `/dashboard`.
 
 ## Scripts
 
@@ -170,7 +183,7 @@ The guard screen is at `/staff`. The organizer panel is at `/dashboard`.
 ## Testing
 
 - **Unit (Vitest, 29 tests)** — dedupe keys, permission defaults and copying, code generation, text normalization, timezone conversion, CSV escaping, server-side door authorization (including the `canCheckIn` flag and closed events) and login throttling.
-- **End-to-end (Playwright, 9 tests)** — organizer login, guard login by code, guest check-in seen live by the organizer, contact permission, forbidden export for a guard, cross-event export rejection, CSV import with preview, event creation, table filling (all chairs red), role-specific schedules, and the screenshot suite.
+- **End-to-end (Playwright, 9 tests)** — organizer login, assistant login by code, guest check-in seen live by the organizer, contact permission, forbidden export for an assistant, cross-event export rejection, CSV import with preview, event creation, table filling (all chairs red), role-specific schedules, and the screenshot suite.
 - **CI (GitHub Actions)** — install → Prisma generate → typecheck → lint → unit tests → build, plus a second job with PostgreSQL 18 that applies migrations and runs the e2e suite.
 
 ## Demo scope
@@ -216,7 +229,7 @@ This repository's `main` branch is connected to the Vercel project, so pushes to
 - QR scanning at the door (the guest code already exists).
 - Entry **and exit** tracking for venues that need occupancy.
 - Email/SMS delivery of guest invitations.
-- Offline-first guard mode with a sync queue for weak signal.
+- Offline-first door mode with a sync queue for weak signal.
 - Drag-and-drop floor plan and guest-to-seat assignment.
 - Billing for organizations that manage multiple events.
 

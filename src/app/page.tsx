@@ -188,6 +188,7 @@ export default function HomePage() {
       <div aria-hidden className="rule-draw h-px bg-stone-800" />
 
       <section className="relative isolate overflow-hidden">
+        <div aria-hidden className="hero-halo -z-10" />
         <div aria-hidden className="hero-grid -z-10" />
         <div className="mx-auto flex max-w-3xl flex-col items-center px-4 pb-16 pt-14 text-center sm:px-6 sm:pb-20 sm:pt-16 lg:pb-24 lg:pt-20">
           <div>
