@@ -26,13 +26,13 @@ TypeScript-only refactor of Event-Roll (Next.js 16, Prisma 7). No Rust: no migra
 | T11 | Assert `revalidateEvent` invalidates both screens (review finding R3-revalidate-01) | S4,S5 | inline | `c4de62f` |
 | T12 | Validate the chair id before the demo guard, restoring the "Silla inválida" contract without any database read | S4,S5 | inline | this slice |
 | T13 | Prove the export route refuses a foreign event, an inactive token and a token without permission | S4,S5 | inline | this slice |
+| T14 | One shared `ActionResult<Payload>` for the seven action files | S1,S2 | worker | this slice |
+| T15 | One `ui/brand` lockup for the six copies | S1,S2 | worker | this slice |
 
 ## Follow-ups
 
 Named, not silently dropped. Each is a separate bounded slice on this branch.
 
-- **F1 — `ActionResult`**: seven files declare their own `{ success?, error? }`. A strict discriminated union is the real fix, but it breaks about twenty client call sites that read `result.error` before narrowing, so it needs its own commit and its own review.
-- **F3 — `ui/brand.tsx`**: the logo lockup is copy-pasted six times with drifting sizes.
 - **F6 — Product decision needed**: `updateEvent` accepts a past date while `createEvent` rejects it. Tightening it may break legitimate edits of past events, so it is not a silent refactor.
 
 ## Log
@@ -51,6 +51,7 @@ Named, not silently dropped. Each is a separate bounded slice on this branch.
 - **L9** Slice 1 closes here. Nothing was pushed: commit, push and merge remain the user's decision.
 - **L10** The user said «has lo que falta»; slice 2 delivered F2, F4, F5 and the revalidate assertion (T8-T11). Three concurrent writers on disjoint edit surfaces; the parent merged, fixed nothing silently, and verified: 28 test files / 131 tests, `typecheck`, `lint` and `build` green.
 - **L11** Slice boundary: slice 2 is 4 commits and about 1,250 changed lines, so it is a separate review unit — review per commit, not as one hunk. Deliberate behaviour notes for the reviewer: the import dialog now uses the shared panel styling instead of `Card`; three modals gain backdrop-click close; the close button is disabled (not inert) while a dialog is not dismissible.
+- **L14** F1 and F3 closed the follow-up list. `ActionResult<Payload>` stays deliberately permissive with an explicit comment: a strict discriminated union would still break the twenty client call sites that read `result.error` before narrowing, so that is a contract change, not a rename. The brand lockup is now one component; declared visual normalizations: the staff console mark gains the gradient, border and amber period, and its wordmark goes from text-sm to text-lg.
 - **L13** Third native review (lineage review-87fb019f27101004) escalated with two findings that were acted on instead of argued:
   - **R1-002 (BLOCKER, guard before id validation) — fixed.** Validation is local, so it now runs before the demo guard: a malformed id keeps "Silla inválida" while the guard still precedes every database read, and the test asserts no chair lookup happens either way.
   - **R3-exlect-01 (CRITICAL, export authorization unproved) — fixed.** `route.test.ts` now proves 403 for a foreign event, 403 for a deactivated token, 403 without `canExport`, and the allowed path's scoped query.
