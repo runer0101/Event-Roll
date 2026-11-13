@@ -18,6 +18,11 @@ export const GuestSchema = z.object({
   notes: z.string().trim().max(500).optional().or(z.literal('')),
 })
 
+/** Server actions receive anything at runtime: identifiers are validated too. */
+export const GuestIdSchema = z.string().trim().min(1, 'Invitado inválido').max(64)
+
+export const GuestSearchSchema = z.string().max(120)
+
 export const ImportGuestsSchema = z.object({
   eventId: z.string().min(1),
   rows: z.array(GuestSchema).min(1, 'No hay invitados para importar').max(5000),
