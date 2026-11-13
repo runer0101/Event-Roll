@@ -41,4 +41,3 @@ export const SetStaffActiveSchema = z.object({
   active: z.boolean(),
 })
 
-export type StaffInput = z.infer<typeof StaffSchema>

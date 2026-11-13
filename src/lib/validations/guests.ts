@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { idSchema } from './common'
 
 const optionalEmail = z
   .string()
@@ -19,7 +20,7 @@ export const GuestSchema = z.object({
 })
 
 /** Server actions receive anything at runtime: identifiers are validated too. */
-export const GuestIdSchema = z.string().trim().min(1, 'Invitado inválido').max(64)
+export const GuestIdSchema = idSchema('Invitado inválido')
 
 export const GuestSearchSchema = z.string().max(120)
 
