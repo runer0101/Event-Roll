@@ -177,7 +177,7 @@ The guard screen is at `/staff`. The organizer panel is at `/dashboard`.
 
 This repository is a portfolio demo, not a production deployment. The shortcuts are deliberate:
 
-- The demo organizer credentials are public by design, so every write in the demo organization is refused with a read-only message: creating or editing events, guests, staff, tables and schedule items, switching the event status and importing a guest list. Two flows stay open because they are what the demo is for: checking a guest in and out at the door, and toggling a chair. Treat the demo database as disposable and never import real guest data.
+- The demo organizer credentials are public by design, so every write in the demo organization is refused with a read-only message: creating or editing events, guests, staff, tables, chairs and schedule items, switching the event status and importing a guest list. Checking a guest in and out at the door stays open, because that is what the demo is for. Treat the demo database as disposable and never import real guest data.
 - The login throttle lives in process memory and is keyed by address and identity; a multi-instance deploy would move it to Redis.
 - The Content Security Policy keeps `'unsafe-inline'` for scripts because Next ships inline bootstrap scripts; removing it needs a per-request nonce threaded through every render.
 - Every event shares `NEXT_PUBLIC_APP_TIMEZONE`; per-event timezones would need a schema change.
