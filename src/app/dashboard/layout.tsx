@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { ExternalLink, LayoutDashboard, LogOut } from "lucide-react";
 import { logout } from "@/actions/auth";
+import { Brand } from "@/components/ui/brand";
 import { Button } from "@/components/ui/button";
-import { NerdGlyph } from "@/components/ui/nerd-glyph";
 import { getOrganizationForOwner } from "@/lib/queries/events";
 import { requireOwner } from "@/lib/session";
 
@@ -21,12 +21,7 @@ export default async function DashboardLayout({
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-5">
             <Link href="/dashboard" className="group flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-amber-300/40 bg-gradient-to-b from-amber-200 to-amber-500 text-stone-950 shadow-[0_8px_24px_-12px_rgba(212,175,55,0.8)] transition-transform duration-500 group-hover:rotate-3">
-                <NerdGlyph name="ticket" className="text-[1.2rem]" />
-              </span>
-              <span className="font-display hidden text-xl font-semibold tracking-tight text-stone-50 sm:block">
-                Event-Roll<span className="text-amber-400">.</span>
-              </span>
+              <Brand size="md" wordmarkClassName="hidden sm:block" />
             </Link>
             <span className="hidden h-6 w-px bg-stone-800 sm:block" />
             <Link

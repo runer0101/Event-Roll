@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { StaffLoginForm } from "@/components/auth/staff-login-form";
 import { GoldParticles } from "@/components/motion/gold-particles";
-import { NerdGlyph } from "@/components/ui/nerd-glyph";
+import { Brand } from "@/components/ui/brand";
 import { getStaffForSession } from "@/lib/queries/staff";
 
 export const metadata = { title: "Acceso de guardia" };
@@ -35,12 +35,7 @@ export default async function StaffLoginPage() {
       </div>
       <div className="relative w-full max-w-md">
         <Link href="/" className="group mb-8 flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-amber-300/40 bg-gradient-to-b from-amber-200 to-amber-500 text-stone-950 shadow-[0_8px_24px_-12px_rgba(212,175,55,0.8)] transition-transform duration-500 group-hover:rotate-3">
-            <NerdGlyph name="ticket" className="text-[1.2rem]" />
-          </span>
-          <span className="font-display text-xl font-semibold tracking-tight text-stone-50">
-            Event-Roll<span className="text-amber-400">.</span>
-          </span>
+          <Brand size="md" />
         </Link>
         <div className="surface p-7 sm:p-8">
           <StaffLoginForm />

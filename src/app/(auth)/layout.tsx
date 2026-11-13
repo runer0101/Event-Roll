@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { GoldParticles } from "@/components/motion/gold-particles";
-import { NerdGlyph } from "@/components/ui/nerd-glyph";
+import { Brand } from "@/components/ui/brand";
 
 export default function AuthLayout({
   children,
@@ -18,12 +18,7 @@ export default function AuthLayout({
         </div>
 
         <Link href="/" className="group relative flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-amber-300/40 bg-gradient-to-b from-amber-200 to-amber-500 text-stone-950 shadow-[0_8px_24px_-12px_rgba(212,175,55,0.8)] transition-transform duration-500 group-hover:rotate-3">
-            <NerdGlyph name="ticket" className="text-[1.2rem]" />
-          </span>
-          <span className="font-display text-xl font-semibold tracking-tight">
-            Event-Roll<span className="text-amber-400">.</span>
-          </span>
+          <Brand size="md" />
         </Link>
 
         <div className="relative mt-auto max-w-md">
@@ -64,12 +59,7 @@ export default function AuthLayout({
         />
         <div className="relative w-full max-w-md">
           <Link href="/" className="group mb-10 flex items-center gap-2.5 lg:hidden">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-amber-300/40 bg-gradient-to-b from-amber-200 to-amber-500 text-stone-950">
-              <NerdGlyph name="ticket" className="text-[1.2rem]" />
-            </span>
-            <span className="font-display text-xl font-semibold tracking-tight text-stone-50">
-              Event-Roll<span className="text-amber-400">.</span>
-            </span>
+            <Brand size="md" />
           </Link>
           {children}
         </div>
