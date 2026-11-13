@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateEvent } from '@/lib/revalidate'
 import { z } from 'zod'
 import prisma from '@/lib/prisma'
 import { Prisma } from '@/generated/prisma/client'
@@ -53,7 +53,7 @@ export async function createTable(
       },
     })
 
-    revalidatePath(`/dashboard/events/${event.id}`, 'layout')
+    revalidateEvent(event.id)
     return { success: true, tableId: table.id }
   } catch (error) {
     if (
@@ -79,7 +79,7 @@ export async function deleteTable(
   if (!table) return { error: 'Mesa no encontrada' }
 
   await prisma.eventTable.delete({ where: { id: table.id } })
-  revalidatePath(`/dashboard/events/${table.eventId}`, 'layout')
+  revalidateEvent(table.eventId)
   return { success: true }
 }
 
@@ -111,7 +111,7 @@ export async function toggleChair(chairId: string): Promise<ActionResult> {
     },
     data: { occupied },
   })
-  revalidatePath(`/dashboard/events/${chair.eventId}`, 'layout')
+  revalidateEvent(chair.eventId)
 
   if (changed.count > 0) return { success: true, occupied }
 
@@ -138,6 +138,6 @@ export async function resetTable(tableId: string): Promise<ActionResult> {
     where: { tableId: table.id },
     data: { occupied: false, guestName: null },
   })
-  revalidatePath(`/dashboard/events/${table.eventId}`, 'layout')
+  revalidateEvent(table.eventId)
   return { success: true }
 }

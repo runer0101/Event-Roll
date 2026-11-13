@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateEvent } from '@/lib/revalidate'
 import { auth } from '@/auth'
 import prisma from '@/lib/prisma'
 import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
@@ -57,8 +57,7 @@ export async function createScheduleItem(
     },
   })
 
-  revalidatePath(`/dashboard/events/${event.id}`, 'layout')
-  revalidatePath(`/staff/event/${event.id}`, 'layout')
+  revalidateEvent(event.id)
   return { success: true, itemId: item.id }
 }
 
@@ -95,8 +94,7 @@ export async function toggleScheduleItem(
     data: { status },
   })
 
-  revalidatePath(`/dashboard/events/${item.eventId}`, 'layout')
-  revalidatePath(`/staff/event/${item.eventId}`, 'layout')
+  revalidateEvent(item.eventId)
   return { success: true, status }
 }
 
@@ -113,7 +111,6 @@ export async function deleteScheduleItem(
   if (!item) return { error: 'Tarea no encontrada' }
 
   await prisma.scheduleItem.delete({ where: { id: item.id } })
-  revalidatePath(`/dashboard/events/${item.eventId}`, 'layout')
-  revalidatePath(`/staff/event/${item.eventId}`, 'layout')
+  revalidateEvent(item.eventId)
   return { success: true }
 }

@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { revalidateEvent } from '@/lib/revalidate'
 import prisma from '@/lib/prisma'
 import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
 import { requireOwner } from '@/lib/session'
@@ -65,7 +66,7 @@ export async function updateEvent(
   })
 
   revalidatePath('/dashboard')
-  revalidatePath(`/dashboard/events/${event.id}`, 'layout')
+  revalidateEvent(event.id)
   return { success: true, eventId: event.id }
 }
 
@@ -90,8 +91,7 @@ export async function setEventStatus(
   })
 
   revalidatePath('/dashboard')
-  revalidatePath(`/dashboard/events/${event.id}`, 'layout')
-  revalidatePath(`/staff/event/${event.id}`, 'layout')
+  revalidateEvent(event.id)
   return { success: true }
 }
 
