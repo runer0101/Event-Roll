@@ -25,9 +25,6 @@ export async function createEvent(input: unknown): Promise<ActionResult> {
   }
 
   const { name, date, location, description } = parsed.data
-  if (date.getTime() < Date.now()) {
-    return { error: 'La fecha del evento debe ser futura' }
-  }
 
   const event = await prisma.event.create({
     data: {
