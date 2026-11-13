@@ -13,6 +13,21 @@ export async function loginOrganizer(page: Page) {
   await page.waitForURL('**/dashboard')
 }
 
+/**
+ * The seeded demo organization is read-only on purpose, so a spec that has to
+ * write registers its own organizer instead of borrowing the demo one.
+ */
+export async function registerOrganizer(page: Page, stamp: number) {
+  await page.goto('/register')
+  await page.waitForTimeout(500)
+  await page.fill('#organizationName', `Organización ${stamp}`)
+  await page.fill('#name', `Organizador ${stamp}`)
+  await page.fill('#email', `organizer${stamp}@example.com`)
+  await page.fill('#password', 'prueba-segura-2026')
+  await page.getByRole('button', { name: 'Crear cuenta' }).click()
+  await page.waitForURL('**/dashboard')
+}
+
 export async function loginStaff(page: Page, code = 'STF-GUARD01') {
   await page.goto('/staff')
   await page.waitForTimeout(500)
