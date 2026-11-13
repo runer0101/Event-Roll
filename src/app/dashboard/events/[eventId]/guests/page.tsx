@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getEventForOwner } from "@/lib/queries/events";
 import { getGuestsPage } from "@/lib/queries/guests";
+import { clampPage, normalizePage } from "@/lib/pagination";
 import { requireOwner } from "@/lib/session";
 import { formatDateTime } from "@/lib/utils";
 import type { GuestStatus } from "@/generated/prisma/enums";
@@ -55,13 +56,24 @@ export default async function GuestsPage({
     ? (rawStatus as GuestStatus | "ALL")
     : "ALL";
   const query = filters.q ?? "";
-  const page = Number.parseInt(filters.page ?? "1", 10) || 1;
+  // `?page=` comes from the URL: an unbounded value overflows the query offset,
+  // so it is capped before the read and clamped to the range that exists.
+  const requestedPage = normalizePage(filters.page);
 
-  const data = await getGuestsPage(event.id, owner.organizationId, {
+  let data = await getGuestsPage(event.id, owner.organizationId, {
     query,
     status,
-    page,
+    page: requestedPage,
   });
+
+  const page = clampPage(data.page, data.pageCount);
+  if (page !== data.page) {
+    data = await getGuestsPage(event.id, owner.organizationId, {
+      query,
+      status,
+      page,
+    });
+  }
 
   const hasFilters = query.trim() !== "" || status !== "ALL";
   const basePath = `/dashboard/events/${event.id}/guests`;

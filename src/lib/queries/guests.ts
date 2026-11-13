@@ -98,20 +98,55 @@ export async function searchGuestsForStaff(
   })
 }
 
+const RECENT_CHECK_IN_LIMIT = 8
+// Entries are folded per guest below, so the scan reads past the visible window
+// to keep eight real entries when some of them were undone.
+const RECENT_CHECK_IN_SCAN = 40
+
 export async function getRecentCheckInsForStaff(
   staffId: string,
   eventId: string,
   organizationId: string,
 ) {
-  return prisma.accessLog.findMany({
+  const logs = await prisma.accessLog.findMany({
     where: {
       staffId,
       eventId,
       organizationId,
-      action: 'CHECK_IN',
+      action: { in: ['CHECK_IN', 'UNDO_CHECK_IN'] },
     },
     orderBy: { createdAt: 'desc' },
-    take: 8,
-    select: { id: true, guestName: true, createdAt: true },
+    take: RECENT_CHECK_IN_SCAN,
+    select: {
+      id: true,
+      guestId: true,
+      guestName: true,
+      createdAt: true,
+      action: true,
+    },
   })
+
+  const recent: Array<{
+    id: string
+    guestName: string
+    createdAt: Date
+  }> = []
+  const seen = new Set<string>()
+
+  for (const log of logs) {
+    // The newest entry per guest decides: an undo hides the check-in it
+    // reverted, and a later check-in replaces the undone one.
+    const key = log.guestId ?? log.id
+    if (seen.has(key)) continue
+    seen.add(key)
+    if (log.action !== 'CHECK_IN') continue
+    recent.push({
+      id: log.id,
+      guestName: log.guestName,
+      createdAt: log.createdAt,
+    })
+    if (recent.length === RECENT_CHECK_IN_LIMIT) break
+  }
+
+  return recent
 }
