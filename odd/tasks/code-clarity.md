@@ -7,7 +7,7 @@ TypeScript-only refactor of Event-Roll (Next.js 16, Prisma 7). No Rust: no migra
 - **S1** The user asked, verbatim: «mejora este proyecto termina la migracion a rust que se vea profecional, y no confuso como esta ahora a nivel de codigo».
 - **S2** The user chose, verbatim: «Ordenar el TypeScript actual (refactor real)» — audit the code, remove duplication, separate layers (actions / queries / validations / UI), unify conventions and document it, with contained risk and reviewable commits.
 - **S3** No Rust is introduced. `find -name '*.rs'` returned 0 files and there is no `Cargo.toml`, no Rust branch and no Rust in history; the "Rust migration" premise is false and is recorded here so it is never re-assumed.
-- **S4** Existing behaviour is preserved: every change keeps the current user-visible contract, and `pnpm typecheck`, `pnpm lint`, `pnpm test` and `pnpm build` stay green. One declared exception: a deactivated staff token now reads «Tu acceso está inactivo» at every staff action; `undoCheckIn` and `updateGuest` used to show a permission message for the same refusal. `staff-permission-messages.test.ts` pins the new text and the fact that no guest lookup happens. Second declared exception: the dashboard "Invitados" card now counts non-cancelled guests, the same denominator its rate already used, instead of every status (`9fe2de8`).
+- **S4** Existing behaviour is preserved: every change keeps the current user-visible contract, and `pnpm typecheck`, `pnpm lint`, `pnpm test` and `pnpm build` stay green. One declared exception: a deactivated staff token now reads «Tu acceso está inactivo» at every staff action; `undoCheckIn` and `updateGuest` used to show a permission message for the same refusal. `staff-permission-messages.test.ts` pins the new text and the fact that no guest lookup happens. Second declared exception: the dashboard "Invitados" card now counts non-cancelled guests, the same denominator its rate already used, instead of every status (`9fe2de8`). Third change, by explicit user decision (F6): creating and editing both refuse an event date in the past; editing a past event is no longer possible.
 - **S5** Every bug found during the audit is fixed with a test that fails before the fix, not folded silently into a rename.
 
 ## Tasks
@@ -28,12 +28,12 @@ TypeScript-only refactor of Event-Roll (Next.js 16, Prisma 7). No Rust: no migra
 | T13 | Prove the export route refuses a foreign event, an inactive token and a token without permission | S4,S5 | inline | this slice |
 | T14 | One shared `ActionResult<Payload>` for the seven action files | S1,S2 | worker | this slice |
 | T15 | One `ui/brand` lockup for the six copies | S1,S2 | worker | this slice |
+| T16 | One future-date rule in `EventSchema` for create and update (F6) | S1,S4,S5 | inline | this slice |
 
 ## Follow-ups
 
 Named, not silently dropped. Each is a separate bounded slice on this branch.
 
-- **F6 — Product decision needed**: `updateEvent` accepts a past date while `createEvent` rejects it. Tightening it may break legitimate edits of past events, so it is not a silent refactor.
 
 ## Log
 
@@ -51,6 +51,7 @@ Named, not silently dropped. Each is a separate bounded slice on this branch.
 - **L9** Slice 1 closes here. Nothing was pushed: commit, push and merge remain the user's decision.
 - **L10** The user said «has lo que falta»; slice 2 delivered F2, F4, F5 and the revalidate assertion (T8-T11). Three concurrent writers on disjoint edit surfaces; the parent merged, fixed nothing silently, and verified: 28 test files / 131 tests, `typecheck`, `lint` and `build` green.
 - **L11** Slice boundary: slice 2 is 4 commits and about 1,250 changed lines, so it is a separate review unit — review per commit, not as one hunk. Deliberate behaviour notes for the reviewer: the import dialog now uses the shared panel styling instead of `Card`; three modals gain backdrop-click close; the close button is disabled (not inert) while a dialog is not dismissible.
+- **L15** F6 decided by the user: «Rechazar toda fecha pasada, también al editar». The rule moved from `createEvent` into `EventSchema.refine`, so both paths share one message and a future action cannot skip it. Tests added for create-past, update-past and update-future (`events-date.test.ts`), RED first. Accepted cost: a past event can no longer be edited. `e2e/import.spec.ts` already uses 2027-12-31, so the suite is unaffected.
 - **L14** F1 and F3 closed the follow-up list. `ActionResult<Payload>` stays deliberately permissive with an explicit comment: a strict discriminated union would still break the twenty client call sites that read `result.error` before narrowing, so that is a contract change, not a rename. The brand lockup is now one component; declared visual normalizations: the staff console mark gains the gradient, border and amber period, and its wordmark goes from text-sm to text-lg.
 - **L13** Third native review (lineage review-87fb019f27101004) escalated with two findings that were acted on instead of argued:
   - **R1-002 (BLOCKER, guard before id validation) — fixed.** Validation is local, so it now runs before the demo guard: a malformed id keeps "Silla inválida" while the guard still precedes every database read, and the test asserts no chair lookup happens either way.
