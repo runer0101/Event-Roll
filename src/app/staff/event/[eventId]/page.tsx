@@ -5,8 +5,8 @@ import { logout } from "@/actions/auth";
 import { StaffConsole } from "@/components/staff-console";
 import { StaffSchedule } from "@/components/staff-schedule";
 import { Badge } from "@/components/ui/badge";
+import { Brand } from "@/components/ui/brand";
 import { Button } from "@/components/ui/button";
-import { NerdGlyph } from "@/components/ui/nerd-glyph";
 import { getEventCounters } from "@/lib/queries/events";
 import { getRecentCheckInsForStaff } from "@/lib/queries/guests";
 import { getScheduleForStaff } from "@/lib/queries/schedule";
@@ -83,12 +83,7 @@ export default async function StaffEventPage({
         <header className="border-b border-stone-800/70 bg-stone-950/80 backdrop-blur-xl">
           <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
             <Link href="/" className="group flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-300/40 bg-gradient-to-b from-amber-200 to-amber-500 text-stone-950 transition-transform duration-500 group-hover:rotate-3">
-                <NerdGlyph name="ticket" className="text-[1.05rem]" />
-              </span>
-              <span className="font-display hidden text-lg font-semibold text-stone-50 sm:block">
-                Event-Roll<span className="text-amber-400">.</span>
-              </span>
+              <Brand size="sm" wordmarkClassName="hidden sm:block" />
             </Link>
             <div className="min-w-0 text-center">
               <p className="truncate text-sm font-semibold text-stone-50">
