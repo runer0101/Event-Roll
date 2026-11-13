@@ -1,19 +1,26 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
+/**
+ * Both families are self-hosted latin subsets with a variable weight axis. They
+ * used to come from `next/font/google`, which downloads from fonts.gstatic.com
+ * during `next build`: a failed request there surfaces as the misleading
+ * "Module not found: @vercel/turbopack-next/internal/font/google/font" and
+ * takes the whole build down. See src/app/fonts/README.md.
+ */
+const inter = localFont({
+  src: "./fonts/inter-latin.woff2",
   variable: "--font-inter",
   display: "swap",
+  weight: "100 900",
 });
 
-const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const cormorant = localFont({
+  src: "./fonts/cormorant-garamond-latin.woff2",
   variable: "--font-cormorant",
   display: "swap",
+  weight: "300 700",
 });
 
 /**
