@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import {
   Armchair,
   CheckCircle2,
@@ -15,6 +15,7 @@ import {
   resetTable,
   toggleChair,
 } from "@/actions/tables";
+import { useAction } from "@/components/use-action";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,8 +42,7 @@ export function SeatingBoard({ initial }: { initial: TableView[] }) {
   // `useState(initial)` alone would ignore a refreshed server prop, so a table
   // created in the form above only showed up after a full reload.
   const [syncedInitial, setSyncedInitial] = useState(initial);
-  const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const { run, pending, error } = useAction();
   // Skip the sync while a toggle is in flight: a refresh landing mid-request
   // would overwrite the optimistic state of the chair being clicked.
   if (!pending && syncedInitial !== initial) {
@@ -72,24 +72,24 @@ export function SeatingBoard({ initial }: { initial: TableView[] }) {
   }
 
   function toggle(tableId: string, chair: ChairView) {
-    setError(null);
     // Optimistic, but only until the action answers with the stored value.
     setChair(tableId, chair.id, !chair.occupied);
 
-    startTransition(async () => {
-      const result = await toggleChair(chair.id);
-      if (result?.error) {
-        setError(result.error);
-        setChair(tableId, chair.id, chair.occupied);
-        return;
-      }
-      // The action decides: a second click or another tab may have moved the
-      // chair since this one was rendered, so its answer wins over the guess.
-      if (typeof result?.occupied === "boolean") {
-        setChair(tableId, chair.id, result.occupied);
-      }
-      router.refresh();
-    });
+    run(
+      async () => {
+        const result = await toggleChair(chair.id);
+        if (result?.error) {
+          setChair(tableId, chair.id, chair.occupied);
+          return result;
+        }
+        // The action decides: a second click or another tab may have moved the
+        // chair since this one was rendered, so its answer wins over the guess.
+        if (typeof result?.occupied === "boolean") {
+          setChair(tableId, chair.id, result.occupied);
+        }
+      },
+      { onSuccess: () => router.refresh() },
+    );
   }
 
   function remove(table: TableView) {
@@ -100,20 +100,15 @@ export function SeatingBoard({ initial }: { initial: TableView[] }) {
     ) {
       return;
     }
-    setError(null);
-    startTransition(async () => {
-      const result = await deleteTable(table.id);
-      if (result?.error) {
-        setError(result.error);
-        return;
-      }
-      setTables((current) => current.filter((item) => item.id !== table.id));
-      router.refresh();
+    run(async () => deleteTable(table.id), {
+      onSuccess: () => {
+        setTables((current) => current.filter((item) => item.id !== table.id));
+        router.refresh();
+      },
     });
   }
 
   function reset(table: TableView) {
-    setError(null);
     const previous = table.chairs;
     setTables((current) =>
       current.map((item) =>
@@ -128,21 +123,22 @@ export function SeatingBoard({ initial }: { initial: TableView[] }) {
           : item,
       ),
     );
-    startTransition(async () => {
-      const result = await resetTable(table.id);
-      if (result?.error) {
-        setError(result.error);
-        // Same rollback the chair toggle does: the board must not keep a
-        // "todas libres" state the server refused to store.
-        setTables((current) =>
-          current.map((item) =>
-            item.id === table.id ? { ...item, chairs: previous } : item,
-          ),
-        );
-        return;
-      }
-      router.refresh();
-    });
+    run(
+      async () => {
+        const result = await resetTable(table.id);
+        if (result?.error) {
+          // Same rollback the chair toggle does: the board must not keep a
+          // "todas libres" state the server refused to store.
+          setTables((current) =>
+            current.map((item) =>
+              item.id === table.id ? { ...item, chairs: previous } : item,
+            ),
+          );
+          return result;
+        }
+      },
+      { onSuccess: () => router.refresh() },
+    );
   }
 
   return (
