@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { csvCell } from "@/lib/csv";
 import { getEventForOwner } from "@/lib/queries/events";
-import { getActiveStaff } from "@/lib/queries/staff";
+import { resolveStaff } from "@/lib/session";
 import { formatDateTime } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -34,16 +34,11 @@ export async function GET(
     if (event.id !== user.eventId) {
       return new Response("No autorizado", { status: 403 });
     }
-    const staff = await getActiveStaff(
-      user.staffId,
-      user.eventId,
-      user.organizationId,
-      user.staffSessionVersion ?? -1,
-    );
-    if (!staff?.canExport) {
+    const access = await resolveStaff(user);
+    if (!access.ok || !access.staff.canExport) {
       return new Response("No autorizado", { status: 403 });
     }
-    includeContact = staff.canViewContact;
+    includeContact = access.staff.canViewContact;
   }
 
   const guests = await prisma.guest.findMany({

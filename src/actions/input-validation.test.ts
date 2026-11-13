@@ -14,7 +14,12 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@/auth', () => ({ auth: mocks.auth }))
-vi.mock('@/lib/session', () => ({ requireOwner: mocks.requireOwner }))
+// Keep the real resolveStaff: it must run against the mocked staff query, so
+// this suite still exercises the shared authorization path end to end.
+vi.mock('@/lib/session', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/session')>('@/lib/session')
+  return { ...actual, requireOwner: mocks.requireOwner }
+})
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 vi.mock('@/lib/queries/staff', () => ({
   getActiveStaff: mocks.getActiveStaff,

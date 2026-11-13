@@ -4,9 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { auth } from '@/auth'
 import prisma from '@/lib/prisma'
 import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
-import { requireOwner } from '@/lib/session'
+import { requireOwner, resolveStaff } from '@/lib/session'
 import { getEventForOwner } from '@/lib/queries/events'
-import { getActiveStaff } from '@/lib/queries/staff'
 import { guestDedupeKey } from '@/lib/guests'
 import { generateGuestCode, normalizeText } from '@/lib/utils'
 import {
@@ -90,14 +89,9 @@ export async function updateGuest(
   // Check the permission before looking the guest up so an unprivileged staff
   // member cannot use the response to probe guest IDs.
   if (user.role === 'STAFF') {
-    if (!user.staffId || !user.eventId) return { error: 'No autorizado' }
-    const staff = await getActiveStaff(
-      user.staffId,
-      user.eventId,
-      user.organizationId,
-      user.staffSessionVersion ?? -1,
-    )
-    if (!staff?.canEditGuests) {
+    const access = await resolveStaff(user)
+    if (!access.ok) return { error: access.error }
+    if (!access.staff.canEditGuests) {
       return { error: 'No tienes permiso para editar invitados' }
     }
   }
