@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Brand } from "@/components/ui/brand";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export default function AuthLayout({
   children,
@@ -55,6 +56,9 @@ export default function AuthLayout({
       </aside>
 
       <main className="relative flex items-center justify-center overflow-hidden px-4 py-10 sm:px-8">
+        <div className="absolute right-4 top-4 sm:right-8">
+          <ThemeToggle />
+        </div>
         <div className="relative w-full max-w-md">
           <Link href="/" className="group mb-10 flex items-center gap-2.5 lg:hidden">
             <Brand size="md" />

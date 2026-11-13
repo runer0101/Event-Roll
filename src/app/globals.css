@@ -810,3 +810,111 @@
     display: none;
   }
 }
+
+/* --- Light theme ---------------------------------------------------------
+   The palette is inverted rather than redesigned: every utility keeps its
+   meaning (stone-950 is the page, stone-50 is the text, stone-800 is a rule),
+   so a screen built for ink reads correctly as a screen built for paper.
+   Later rules win over the utilities defined above, so overrides stay here.
+   ------------------------------------------------------------------------ */
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --color-stone-50: #17130e;
+  --color-stone-100: #241e17;
+  --color-stone-200: #3a3126;
+  --color-stone-300: #55483a;
+  --color-stone-400: #6f6152;
+  --color-stone-500: #8a7c6b;
+  --color-stone-600: #a89a88;
+  --color-stone-700: #cdc2ae;
+  --color-stone-800: #e0d7c4;
+  --color-stone-900: #f1e9da;
+  --color-stone-950: #fbf7ec;
+
+  --color-amber-50: #2c200b;
+  --color-amber-100: #4a3612;
+  --color-amber-200: #6b5019;
+  --color-amber-300: #8a6516;
+  --color-amber-400: #a9821f;
+  --color-amber-500: #c09a2b;
+  --color-amber-600: #d4af37;
+  --color-amber-700: #e6cd7e;
+  --color-amber-800: #f2e4b8;
+  --color-amber-900: #faf0c8;
+
+  --color-red-300: #7f1d2d;
+  --color-red-400: #9b2438;
+  --color-red-500: #b3364a;
+  --color-red-600: #d96b7c;
+  --color-red-700: #f0a3ae;
+
+  --color-emerald-300: #1f6f56;
+  --color-emerald-400: #25835f;
+  --color-emerald-500: #34b58a;
+}
+
+[data-theme="light"] body {
+  background-image:
+    radial-gradient(
+      60rem 42rem at 88% -12%,
+      rgba(169, 130, 31, 0.12),
+      transparent 62%
+    ),
+    radial-gradient(
+      48rem 34rem at 4% 108%,
+      rgba(169, 130, 31, 0.08),
+      transparent 60%
+    );
+}
+
+[data-theme="light"] ::selection {
+  background: #8a6516;
+  color: #fbf7ec;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #f1e9da;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #cdc2ae;
+  border-color: #f1e9da;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #a89a88;
+}
+
+[data-theme="light"] .hero-grid {
+  background-image:
+    linear-gradient(to right, rgba(110, 88, 20, 0.16) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(30, 24, 16, 0.08) 1px, transparent 1px);
+}
+
+[data-theme="light"] .hero-halo {
+  background: radial-gradient(
+    42% 38% at 50% 30%,
+    rgba(169, 130, 31, 0.18),
+    transparent 72%
+  );
+}
+
+[data-theme="light"] .skeleton {
+  background: linear-gradient(
+      90deg,
+      rgba(205, 194, 174, 0.5) 25%,
+      rgba(224, 215, 196, 0.8) 37%,
+      rgba(205, 194, 174, 0.5) 63%
+    )
+    0 0 / 200% 100%;
+}
+
+[data-theme="light"] .row-accent::before {
+  background: rgba(138, 101, 22, 0.8);
+}
+
+[data-theme="light"] .row-accent:hover {
+  background-color: rgba(138, 101, 22, 0.06);
+}

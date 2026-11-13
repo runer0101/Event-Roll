@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { Magnetic } from "@/components/motion/magnetic";
 import { buttonClasses } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 /** One ring for every link on this page; the buttons already bring their own. */
 const focusRing =
@@ -171,7 +172,8 @@ export default function HomePage() {
             <NavLink href="#roles">Roles</NavLink>
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
             <Link
               href="/login"
               className={`hidden px-3 py-2 text-sm font-medium text-stone-300 transition hover:text-amber-100 sm:block ${focusRing}`}

@@ -3,6 +3,7 @@ import { ExternalLink, LayoutDashboard, LogOut } from "lucide-react";
 import { logout } from "@/actions/auth";
 import { Brand } from "@/components/ui/brand";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { getOrganizationForOwner } from "@/lib/queries/events";
 import { requireOwner } from "@/lib/session";
 
@@ -49,6 +50,7 @@ export default async function DashboardLayout({
               <ExternalLink className="h-3.5 w-3.5" aria-hidden />
               Vista asistente
             </Link>
+            <ThemeToggle />
             <form action={logout}>
               <Button variant="ghost" size="sm" type="submit">
                 <LogOut className="h-4 w-4" aria-hidden />
