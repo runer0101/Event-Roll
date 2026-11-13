@@ -18,7 +18,7 @@ export function Alert({
     <div
       role="alert"
       className={cn(
-        "rounded-xl border px-4 py-3 text-sm",
+ " border px-4 py-3 text-sm",
         variants[variant],
         className,
       )}

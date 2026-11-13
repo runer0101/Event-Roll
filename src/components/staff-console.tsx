@@ -3,16 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import {
-  CheckCircle2,
-  Clock,
-  Download,
-  LogOut,
-  Radio,
-  RotateCcw,
-  Search,
-  UserRound,
-} from "lucide-react";
+import { LogOut, Search } from "lucide-react";
 import { logout } from "@/actions/auth";
 import { checkInGuest, searchGuests, undoCheckIn } from "@/actions/checkin";
 import type { StaffGuestResult } from "@/actions/checkin";
@@ -26,7 +17,6 @@ import {
   type StaffScheduleItem,
 } from "@/components/staff-schedule";
 import { StaffGuestEditor } from "@/components/staff/staff-guest-editor";
-import { Brand } from "@/components/ui/brand";
 import { formatTime } from "@/lib/utils";
 
 type Message = { variant: "success" | "danger"; text: string } | null;
@@ -155,10 +145,13 @@ export function StaffConsole({
 
   return (
     <div className="min-h-svh bg-stone-950">
-      <header className="border-b border-stone-800/70 bg-stone-950/80 backdrop-blur-xl">
+      <header className="border-b border-stone-800 bg-stone-950">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
-          <Link href="/" className="flex items-center gap-2">
-            <Brand size="sm" wordmarkClassName="hidden sm:block" />
+          <Link
+            href="/"
+            className="hidden items-baseline font-display text-lg font-semibold tracking-tight text-stone-50 sm:flex"
+          >
+            Event-Roll<span className="text-stone-400">.</span>
           </Link>
           <div className="min-w-0 text-center">
             <p className="truncate text-sm font-semibold text-stone-50">
@@ -192,8 +185,7 @@ export function StaffConsole({
               Busca al invitado y marca su entrada.
             </p>
           </div>
-          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
-            <Radio className="h-3.5 w-3.5" aria-hidden />
+          <span className="inline-flex items-center gap-2 border border-emerald-500/40 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-emerald-300">
             Puerta abierta
           </span>
         </div>
@@ -207,12 +199,12 @@ export function StaffConsole({
             ].map((item) => (
               <div
                 key={item.label}
-                className="rounded-xl border border-stone-800 bg-stone-900 px-3 py-2.5 text-center"
+                className="border-t border-stone-800 pt-2.5 text-center"
               >
-                <p className="text-[10px] uppercase tracking-wider text-stone-400">
+                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-stone-400">
                   {item.label}
                 </p>
-                <p className="mt-1 text-lg font-semibold text-stone-50">
+                <p className="mt-1 text-lg font-semibold tabular-nums text-stone-50">
                   {item.value}
                 </p>
               </div>
@@ -224,7 +216,7 @@ export function StaffConsole({
 
         <div className="relative">
           <Search
-            className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-stone-500"
+            className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-500"
             aria-hidden
           />
           <Input
@@ -241,7 +233,7 @@ export function StaffConsole({
             }}
             placeholder="Busca por nombre, código, email o teléfono…"
             autoFocus
-            className="h-14 rounded-2xl border-stone-700/80 bg-stone-950/70 pl-12 text-base shadow-[0_0_0_1px_rgba(212,175,55,0.04)] focus:border-amber-400/70"
+            className="h-12 border-stone-700 bg-stone-950 pl-11 text-base focus:border-amber-400/70"
           />
         </div>
 
@@ -256,9 +248,8 @@ export function StaffConsole({
           {staff.canExport && (
             <a
               href={`/api/events/${event.id}/export`}
-              className="inline-flex items-center gap-1.5 text-stone-400 hover:text-stone-50"
+              className="inline-flex items-center gap-1.5 text-stone-400 underline decoration-stone-700 underline-offset-4 transition-colors hover:text-stone-50"
             >
-              <Download className="h-3.5 w-3.5" aria-hidden />
               Exportar lista
             </a>
           )}
@@ -275,53 +266,34 @@ export function StaffConsole({
           {results.map((guest) => {
             const checkedIn = guest.status === "CHECKED_IN";
             return (
-              <Card
-                key={guest.id}
-                className="card-hover p-4 hover:border-amber-400/25"
-              >
+              <Card key={guest.id} className="p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="flex min-w-0 items-start gap-3">
-                    <span
-                      className={
-                        checkedIn
-                          ? "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-100"
-                          : "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-stone-800 text-stone-300"
-                      }
-                    >
-                      {checkedIn ? (
-                        <CheckCircle2 className="h-5 w-5" aria-hidden />
-                      ) : (
-                        <UserRound className="h-5 w-5" aria-hidden />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-stone-50">
+                      {guest.name}
+                    </p>
+                    <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-stone-400">
+                      <span>{guest.category || "General"}</span>
+                      {guest.plusOnes > 0 && (
+                        <span>+{guest.plusOnes} acompañantes</span>
                       )}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-stone-50">
-                        {guest.name}
+                      <span className="font-mono text-[10px] text-stone-500">
+                        {guest.code}
+                      </span>
+                    </p>
+                    {(guest.email || guest.phone) && (
+                      <p className="mt-1 text-xs text-stone-400">
+                        {[guest.email, guest.phone].filter(Boolean).join(" · ")}
                       </p>
-                      <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-stone-400">
-                        <span>{guest.category || "General"}</span>
-                        {guest.plusOnes > 0 && (
-                          <span>+{guest.plusOnes} acompañantes</span>
-                        )}
-                        <span className="font-mono text-[10px] text-stone-500">
-                          {guest.code}
-                        </span>
+                    )}
+                    {checkedIn && guest.checkedInAt && (
+                      <p className="mt-1 text-xs tabular-nums text-emerald-300">
+                        Ya dentro · {formatTime(guest.checkedInAt)}
+                        {guest.checkedInByName
+                          ? ` · ${guest.checkedInByName}`
+                          : ""}
                       </p>
-                      {(guest.email || guest.phone) && (
-                        <p className="mt-1 text-xs text-stone-400">
-                          {[guest.email, guest.phone].filter(Boolean).join(" · ")}
-                        </p>
-                      )}
-                      {checkedIn && guest.checkedInAt && (
-                        <p className="mt-1 flex items-center gap-1 text-xs text-emerald-300">
-                          <Clock className="h-3 w-3" aria-hidden />
-                          Ya dentro · {formatTime(guest.checkedInAt)}
-                          {guest.checkedInByName
-                            ? ` · ${guest.checkedInByName}`
-                            : ""}
-                        </p>
-                      )}
-                    </div>
+                    )}
                   </div>
 
                   <div className="flex shrink-0 items-center gap-1.5">
@@ -348,7 +320,6 @@ export function StaffConsole({
                             disabled={pending}
                             onClick={() => undo(guest)}
                           >
-                            <RotateCcw className="h-3.5 w-3.5" aria-hidden />
                             Deshacer
                           </Button>
                         )}
@@ -360,7 +331,6 @@ export function StaffConsole({
                         disabled={pending}
                         onClick={() => checkIn(guest)}
                       >
-                        <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
                         Marcar entrada
                       </Button>
                     )}

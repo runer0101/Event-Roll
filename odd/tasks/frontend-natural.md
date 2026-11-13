@@ -1,0 +1,46 @@
+# A frontend that looks hand-made
+
+Refresh the Event-Roll interface (Next.js 16, React 19, Tailwind 4, Prisma) so it stops looking
+AI-generated, static and visually repetitive, using the owner's animation library as the source of
+its motion rather than invented effects.
+
+## Specs
+
+- **S1** The owner asked, verbatim: «verifica que no tenga herrores mejora el frontend se me muy hecho por ia es decir no te has inspidaro de la libreria que tengo haslo tiene que ser mas natural que no se note hecho por ia que es muy estatico e repetitivo visualmente /home/runer/Projects/github_proyectos/entorno/animacion-lib».
+- **S2** No errors: `pnpm typecheck`, `pnpm lint`, `pnpm test` and `pnpm build` stay green, and the result is reported with their exit codes.
+- **S3** Every motion used cites its source in `/home/runer/Projects/github_proyectos/entorno/animacion-lib` by relative file path; nothing is invented that the library already offers. That library is read-only (S7).
+- **S4** The interface must not read as machine-made: different surfaces must not repeat the same card, section and grid shell; hierarchy, spacing and density vary with the job of each screen.
+- **S5** Motion is an accent, not decoration: it respects `prefers-reduced-motion`, never delays reading or blocks input, keeps WCAG AA contrast and a visible focus ring.
+- **S6** No WebGL, Three.js, GSAP or other runtime dependency is added; CSS transitions and small client effects only. This dashboard is used daily on modest hardware.
+- **S7** `/home/runer/Projects/github_proyectos/entorno/animacion-lib` is read only. Nothing there is edited, moved or committed.
+- **S8** No user-visible behaviour changes: actions, validation messages, permissions and query results keep their contract, and the existing vitest and Playwright suites keep passing unchanged.
+- **S9** Nothing is deployed or published without the owner's explicit word.
+
+## Tasks
+
+| ID | Task | Specs | Route | Commit |
+| --- | --- | --- | --- | --- |
+| T1 | Baseline: typecheck, lint, tests and build, with the errors found | S2 | inline | 30 files / 139 tests green, build ok |
+| T2 | Catalogue the library's usable motion, with paths | S3, S6 | explore | 128 demos unzipped; GSAP 118, three 59; patterns taken from Text Animations/1, Grid Animations/8, Hover Effects/19 |
+| T3 | Map the current tokens, primitives and repeated shells | S4 | explore | done: `Card` + `p-5/6` is the answer to every section; five identical bands on the landing |
+| T4 | Shared motion layer: one `motion/` module, reduced-motion aware | S3, S5, S6 | inline | `rise-in`, `clip-in`, `data-pop`, `skeleton`, `row-accent`, `tilt-card` in globals.css; `motion/tilt-card.tsx`; `ui/skeleton.tsx` |
+| T5 | Landing and authentication: first impression | S4, S5 | worker + inline | landing rewritten twice: rhythm first, then the whole decorative layer removed on the owner's instruction («deja de usar stiquer o iconos»). Closed when the owner approves the direction |
+| T6 | Dashboard and event detail: hierarchy and density | S4, S5 | worker | loading states in progress |
+| T7 | Guests, tables, staff console and live panel: the dense surfaces | S4, S5, S8 | worker | first writer run failed on timeout with no files changed; relaunch pending |
+| T8 | Verification: suites, contrast, reduced motion, build | S2, S5, S8 | verify | — |
+
+## Log
+
+- **L1** — «verifica que no tenga herrores mejora el frontend se me muy hecho por ia es decir no te has inspidaro de la libreria que tengo haslo tiene que ser mas natural que no se note hecho por ia que es muy estatico e repetitivo visualmente /home/runer/Projects/github_proyectos/entorno/animacion-lib»
+- **L2** — The library ships as 303 `code.zip` bundles with no extracted source. 128 demos from the eight useful families were unzipped to /tmp/anim for reading; the library itself was not modified (S7). Real dependencies: gsap 118, three 59, lenis 18 — none added to this project (S6).
+- **L3** — The motion vocabulary keeps the library's intent, not its runtime: GSAP staggers become `--i` delays, the GSAP spring of `Hover Effects/19` becomes a 3-degree CSS tilt, the clip-path timeline of `Grid Animations/8` becomes a one-shot keyframe.
+- **L4** — Writer isolation: the runtime rejects parallel writers whose surfaces share any glob, so loading states and the dense screens run after the landing finishes.
+
+- **L5** — The owner judged the first landing rewrite «igual, muy genérico» and forbade decorations: «deja de usar stiquer o iconos, no es profesional». The second pass removed particles, light rays, the door intro, the marquee, every Nerd glyph, the arrows and the gold gradient: a 72px technical grid, 1px rules, a flat data panel and type as the only ornament.
+- **L6** — The owner approved the sober direction and asked for two things: a frontend specialist's pass, and «asistente» instead of «guardia» as the general word, because cooks, musicians and helpers also enter with a code. The landing now says «Entrar como asistente», its role list says «Asistentes de puerta», and the specialist pass aligned the panel to the first line of the headline, unified the section rhythm at `py-24 lg:py-32`, faded the 72px grid with a mask instead of cutting it, added `scroll-mt` to the anchored sections, raised the 11px mono labels from ~4.2:1 to AA, and turned the secondary link into an underlined link rather than a borderless button.
+- **L7** — The owner removed the demo panel from the hero: «saca esa imagen que está al lado derecho, que las letras estén centradas». The hero is now a single centred column (max-w-3xl, centred headline, paragraph and actions); the live rows and their data went with the panel, and `TiltCard` survives only where the feature cards still use it.
+- **L8** — The panel and the rest of the shell took the register: `Card`, `StatCard`, `Badge`, `EmptyState`, the tabs, the live panel, the seating board, the staff console, the schedule, the dialogs, the dashboard chrome and the auth layout are flat (hairlines, no rounding, no blur, no gradients, no ornamental icons). `ui/nerd-glyph.tsx` is deleted with its 16 glyphs; `Brand` is a wordmark. Controls lost `rounded-xl`/`shadow-inner`/`backdrop-blur`. «Guardia» is gone from the source: the general role is «asistente», the door role is «Asistentes de puerta».
+- **L9** — Not verified in the browser: the local session cannot sign in (no reachable database), so the signed-in dashboard was never rendered. Public surfaces (landing, login, staff) were captured and reviewed; the panel is verified by typecheck, lint and the 139 tests only.
+- **L10** — Visual pass after approval: the page now ends in one inverted flat-amber band (the only saturated surface), the eight features became a two-column hairline list instead of eight cards, the four steps sit in an even four-column grid with the number first, the ghost numerals and the duplicated section marker are gone, and the section rhythm dropped from `py-24/32` to `py-16/24` so the page stops gaping. `NerdGlyph`, `SpotlightCard` and `TiltCard` no longer appear on the landing.
+- **L11** — Background request: «busca alguna animacion para colocar atras de las letras pero que no sea pesada... tiene que ser adaptable (celular, tablet, laptop)». Audited the library: all eleven `Background Animations` and `Grid Animations/10` are canvas2D or WebGL (one fragment shader runs nine samples per pixel). None is acceptable on a phone. The idea was kept and the cost removed: `.hero-grid` is two repeating gradients on a 26s `translate3d`, masked radially behind the headline, animation off below 900px and under reduced motion.
+- **L12** — The dev server serves stale compiled CSS after a `globals.css` edit; the mask and the grid looked absent until a clean restart. Verified afterwards in a production build: `grid-drift` 26s on desktop, `none` on a 390px viewport.

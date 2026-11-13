@@ -2,14 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import {
-  Armchair,
-  CheckCircle2,
-  Circle,
-  RefreshCw,
-  Table2,
-  Trash2,
-} from "lucide-react";
+import { RefreshCw, Trash2 } from "lucide-react";
 import {
   deleteTable,
   resetTable,
@@ -20,6 +13,7 @@ import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { StatCard } from "@/components/ui/stat-card";
 import { cn } from "@/lib/utils";
 
@@ -146,48 +140,37 @@ export function SeatingBoard({ initial }: { initial: TableView[] }) {
       {error && <Alert variant="danger">{error}</Alert>}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Mesas" value={tables.length} icon={Table2} />
-        <StatCard label="Sillas" value={totalChairs} icon={Armchair} />
+        <StatCard label="Mesas" value={tables.length} />
+        <StatCard label="Sillas" value={totalChairs} />
         <StatCard
           label="Ocupadas"
           value={occupied}
           hint="Marcadas en rojo"
-          icon={CheckCircle2}
           accent
         />
-        <StatCard
-          label="Disponibles"
-          value={totalChairs - occupied}
-          icon={Circle}
-        />
+        <StatCard label="Disponibles" value={totalChairs - occupied} />
       </div>
 
       <div className="flex flex-wrap items-center gap-4 text-xs text-stone-400">
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded border border-stone-600 bg-stone-800" />
+          <span className="h-3 w-3 border border-stone-600 bg-stone-800" />
           Disponible
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded border border-red-400 bg-red-500" />
+          <span className="h-3 w-3 border border-red-400 bg-red-500" />
           Ocupada
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded border border-red-500/60 bg-red-950/40" />
+          <span className="h-3 w-3 border border-red-500/60 bg-red-950/40" />
           Mesa llena
         </span>
       </div>
 
       {tables.length === 0 ? (
-        <Card className="p-10 text-center">
-          <Table2 className="mx-auto h-8 w-8 text-amber-300" aria-hidden />
-          <h3 className="mt-3 text-lg font-semibold text-stone-50">
-            Todavía no hay mesas
-          </h3>
-          <p className="mx-auto mt-1 max-w-md text-sm text-stone-400">
-            Crea la primera mesa arriba, elige cuántas sillas tiene y empieza a
-            marcar la distribución.
-          </p>
-        </Card>
+        <EmptyState
+          title="Todavía no hay mesas"
+          description="Crea la primera mesa arriba, elige cuántas sillas tiene y empieza a marcar la distribución."
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {tables.map((table) => {
@@ -202,9 +185,7 @@ export function SeatingBoard({ initial }: { initial: TableView[] }) {
                 key={table.id}
                 className={cn(
                   "overflow-hidden transition-colors",
-                  full
-                    ? "border-red-500/50 bg-red-950/20"
-                    : "border-stone-800 bg-stone-900",
+                  full && "border-red-500/50 bg-red-950/20",
                 )}
               >
                 <div className="flex items-start justify-between gap-3 border-b border-stone-800 px-4 py-3">
@@ -256,10 +237,10 @@ export function SeatingBoard({ initial }: { initial: TableView[] }) {
                         type="button"
                         onClick={() => toggle(table.id, chair)}
                         className={cn(
-                          "flex aspect-square items-center justify-center rounded-lg border text-xs font-semibold transition-all",
+                          "flex aspect-square items-center justify-center border font-mono text-xs tabular-nums transition-colors",
                           chair.occupied
-                            ? "border-red-400 bg-red-500 text-white shadow-sm shadow-red-500/30 hover:bg-red-400"
-                            : "border-stone-700 bg-stone-800 text-stone-300 hover:border-amber-400 hover:bg-stone-700 hover:text-amber-300",
+                            ? "border-red-400 bg-red-500 text-white hover:bg-red-400"
+                            : "border-stone-700 bg-stone-900 text-stone-300 hover:border-amber-400 hover:text-amber-300",
                         )}
                         aria-label={`${table.name}, silla ${chair.number}, ${
                           chair.occupied ? "ocupada" : "disponible"

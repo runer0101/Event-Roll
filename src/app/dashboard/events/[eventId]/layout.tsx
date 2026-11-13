@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CalendarDays, MapPin } from "lucide-react";
 import { EventTabs } from "@/components/event-tabs";
 import { Badge } from "@/components/ui/badge";
 import { getEventForOwner } from "@/lib/queries/events";
@@ -23,9 +22,8 @@ export default async function EventLayout({
     <div className="space-y-6">
       <Link
         href="/dashboard"
-        className="group inline-flex items-center gap-1.5 text-sm text-stone-400 transition hover:text-amber-100"
+        className="inline-flex items-center gap-1.5 text-sm text-stone-400 underline decoration-stone-700 underline-offset-4 transition-colors hover:text-stone-50"
       >
-        <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-0.5" aria-hidden />
         Todos los eventos
       </Link>
 
@@ -35,22 +33,17 @@ export default async function EventLayout({
             <Badge variant={event.status === "ACTIVE" ? "success" : "muted"}>
               {event.status === "ACTIVE" ? "Activo" : "Cerrado"}
             </Badge>
-            <span className="eyebrow text-stone-500">
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-stone-400">
               Panel del organizador
             </span>
           </div>
-          <h1 className="mt-2 font-display text-4xl font-medium tracking-tight text-stone-50 sm:text-5xl">
+          <h1 className="mt-3 font-display text-4xl font-medium tracking-tight text-stone-50 sm:text-5xl">
             {event.name}
           </h1>
-          <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-stone-400">
-            <span className="flex items-center gap-1.5">
-              <CalendarDays className="h-4 w-4 text-amber-300/80" aria-hidden />
-              {formatDate(event.date)}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <MapPin className="h-4 w-4 text-amber-300/80" aria-hidden />
-              {event.location}
-            </span>
+          <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-400">
+            <span>{formatDate(event.date)}</span>
+            <span aria-hidden className="h-3 w-px bg-stone-700" />
+            <span>{event.location}</span>
           </p>
         </div>
       </div>

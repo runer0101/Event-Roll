@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
-import { Plus, Trash2 } from "lucide-react";
 import { createGuest, deleteGuest, updateGuest } from "@/actions/guests";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -86,7 +85,6 @@ export function GuestDialog({
         size={isEdit ? "sm" : "md"}
         onClick={() => setOpen(true)}
       >
-        {!isEdit && <Plus className="h-4 w-4" aria-hidden />}
         {triggerLabel}
       </Button>
 
@@ -190,7 +188,6 @@ export function GuestDialog({
                 onClick={handleDelete}
                 disabled={pending}
               >
-                <Trash2 className="h-3.5 w-3.5" aria-hidden />
                 Eliminar
               </Button>
             ) : (

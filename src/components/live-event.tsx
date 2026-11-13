@@ -2,14 +2,7 @@
 
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import {
-  CheckCircle2,
-  Clock,
-  Radio,
-  RotateCcw,
-  UserRound,
-  Users,
-} from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { undoCheckIn } from "@/actions/checkin";
 import type { LiveData } from "@/lib/queries/live";
 import {
@@ -105,18 +98,17 @@ export function LiveEvent({
         </div>
         <span
           className={cn(
-            "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium",
+            "inline-flex items-center gap-2 border px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em]",
             badge.tone === "live"
-              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-              : "border-amber-500/30 bg-amber-500/10 text-amber-200",
+              ? "border-emerald-500/40 text-emerald-300"
+              : "border-amber-500/40 text-amber-200",
           )}
         >
           <span
+            aria-hidden
             className={cn(
-              "h-1.5 w-1.5 rounded-full",
-              badge.tone === "live"
-                ? "animate-pulse bg-emerald-500"
-                : "bg-amber-400",
+              "h-1.5 w-1.5",
+              badge.tone === "live" ? "bg-emerald-500" : "bg-amber-400",
             )}
           />
           {badge.label}
@@ -124,32 +116,29 @@ export function LiveEvent({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Invitados" value={stats.total} icon={Users} />
+        <StatCard label="Invitados" value={stats.total} />
         <StatCard
           label="Dentro"
           value={stats.checkedIn}
           hint={`${stats.rate}% del total`}
-          icon={CheckCircle2}
           accent
         />
         <StatCard
           label="Pendientes"
           value={stats.pending}
           hint="Aún no han entrado"
-          icon={Clock}
         />
         <StatCard
           label="Avance"
           value={`${stats.rate}%`}
           hint="Puerta en tiempo real"
-          icon={Radio}
         />
       </div>
 
       <div>
-        <div className="h-2.5 overflow-hidden rounded-full bg-stone-800">
+        <div className="h-px bg-stone-800">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-400 transition-all duration-500"
+            className="h-px bg-amber-400 transition-all duration-500"
             style={{ width: `${stats.rate}%` }}
           />
         </div>
@@ -168,7 +157,7 @@ export function LiveEvent({
           <div className="divide-y divide-stone-800">
             {recent.length === 0 ? (
               <p className="px-5 py-10 text-center text-sm text-stone-400">
-                Todavía no ha entrado nadie. Cuando un guardia marque una
+                Todavía no ha entrado nadie. Cuando un asistente marque una
                 entrada, aparecerá aquí.
               </p>
             ) : (
@@ -177,20 +166,15 @@ export function LiveEvent({
                 return (
                   <div
                     key={item.id}
-                    className="flex items-center gap-3 px-5 py-3.5"
+                    className="flex items-center gap-3 px-5 py-3"
                   >
                     <span
-                      className={
-                        isUndo
-                          ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-500/10 text-red-300 ring-1 ring-red-500/20"
-                          : "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/20"
-                      }
-                    >
-                      {isUndo ? (
-                        <RotateCcw className="h-4 w-4" aria-hidden />
-                      ) : (
-                        <UserRound className="h-4 w-4" aria-hidden />
+                      className={cn(
+                        "w-14 shrink-0 font-mono text-[10px] uppercase tracking-[0.12em]",
+                        isUndo ? "text-red-300" : "text-emerald-300",
                       )}
+                    >
+                      {isUndo ? "Fuera" : "Dentro"}
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-stone-50">
@@ -238,7 +222,7 @@ export function LiveEvent({
                   key={member.id}
                   className="flex items-center gap-3 px-5 py-3.5"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-800 text-xs font-semibold text-stone-300">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center border border-stone-800 font-mono text-[10px] text-stone-400">
                     {initials(member.name)}
                   </span>
                   <div className="min-w-0 flex-1">

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { GoldParticles } from "@/components/motion/gold-particles";
 import { Brand } from "@/components/ui/brand";
 
 export default function AuthLayout({
@@ -10,12 +9,15 @@ export default function AuthLayout({
   return (
     <div className="grid min-h-svh lg:grid-cols-[1.05fr_0.95fr]">
       <aside className="relative hidden overflow-hidden border-r border-stone-800/60 bg-stone-950 p-12 text-stone-50 lg:flex lg:flex-col">
-        <div aria-hidden className="absolute inset-0">
-          <div className="rays absolute -left-40 -top-72 h-[48rem] w-[48rem] opacity-70" />
-          <GoldParticles count={30} />
-          <div className="absolute -right-32 -top-32 h-[30rem] w-[30rem] rounded-full bg-amber-500/10 blur-3xl" />
-          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-stone-950" />
-        </div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-50"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px)",
+            backgroundSize: "72px 72px",
+          }}
+        />
 
         <Link href="/" className="group relative flex items-center gap-2.5">
           <Brand size="md" />
@@ -25,7 +27,7 @@ export default function AuthLayout({
           <p className="eyebrow">Control de acceso</p>
           <p className="mt-4 font-display text-4xl font-medium leading-[1.05] tracking-tight">
             La puerta de tu evento,
-            <span className="block italic text-gold">en una sola pantalla.</span>
+            <span className="block text-stone-400">en una sola pantalla.</span>
           </p>
           <p className="mt-5 text-sm leading-relaxed text-stone-300">
             Importa la lista, asigna códigos a tu equipo y sigue los accesos en
@@ -36,11 +38,11 @@ export default function AuthLayout({
             {[
               "Un código único por ayudante",
               "Permisos granulares por persona",
-              "Check-in atómico, sin dobles entradas",
+              "Cada entrada se marca una sola vez",
               "Panel del organizador en vivo",
             ].map((item) => (
               <li key={item} className="flex items-center gap-3">
-                <span className="h-1.5 w-1.5 rotate-45 bg-amber-400" />
+                <span aria-hidden className="h-px w-4 bg-stone-600" />
                 {item}
               </li>
             ))}
@@ -53,10 +55,6 @@ export default function AuthLayout({
       </aside>
 
       <main className="relative flex items-center justify-center overflow-hidden px-4 py-10 sm:px-8">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-24 top-0 h-72 w-72 rounded-full bg-amber-400/5 blur-3xl"
-        />
         <div className="relative w-full max-w-md">
           <Link href="/" className="group mb-10 flex items-center gap-2.5 lg:hidden">
             <Brand size="md" />

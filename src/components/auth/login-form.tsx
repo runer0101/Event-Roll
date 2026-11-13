@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState, useTransition, type FormEvent } from "react";
-import { ArrowRight, Wand2 } from "lucide-react";
 import { loginOrganizer } from "@/actions/auth";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -74,7 +73,6 @@ export function LoginForm() {
           disabled={pending}
         >
           {pending ? "Entrando…" : "Entrar"}
-          {!pending && <ArrowRight className="h-4 w-4" aria-hidden />}
         </Button>
       </form>
 
@@ -89,7 +87,6 @@ export function LoginForm() {
           setError(null);
         }}
       >
-        <Wand2 className="h-3.5 w-3.5" aria-hidden />
         Usar credenciales de la demo
       </Button>
 

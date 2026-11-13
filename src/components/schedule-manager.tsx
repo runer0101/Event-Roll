@@ -2,14 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import {
-  CheckCircle2,
-  Clock,
-  Plus,
-  RotateCcw,
-  Trash2,
-  UserRound,
-} from "lucide-react";
+import { Trash2 } from "lucide-react";
 import {
   createScheduleItem,
   deleteScheduleItem,
@@ -140,8 +133,7 @@ export function ScheduleManager({
       {error && <Alert variant="danger">{error}</Alert>}
 
       <Card className="p-5 sm:p-6">
-        <h2 className="flex items-center gap-2 text-sm font-semibold text-stone-50">
-          <Plus className="h-4 w-4 text-amber-300" aria-hidden />
+        <h2 className="text-sm font-semibold text-stone-50">
           Agregar tarea al cronograma
         </h2>
         <form onSubmit={handleCreate} className="mt-4 space-y-4">
@@ -194,7 +186,6 @@ export function ScheduleManager({
           </div>
           <div className="flex justify-end">
             <Button type="submit" disabled={pending}>
-              <Plus className="h-4 w-4" aria-hidden />
               {pending ? "Guardando…" : "Agregar al cronograma"}
             </Button>
           </div>
@@ -217,34 +208,28 @@ export function ScheduleManager({
               )}
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="flex min-w-0 items-start gap-3">
-                  <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-400/30 bg-amber-400/10 text-amber-300">
-                    <Clock className="h-4 w-4" aria-hidden />
-                  </span>
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-xs font-semibold text-amber-300">
-                        {item.startLabel}
-                      </span>
-                      <Badge
-                        variant={item.status === "DONE" ? "success" : "warning"}
-                      >
-                        {item.status === "DONE" ? "Hecha" : "Pendiente"}
-                      </Badge>
-                    </div>
-                    <p className="mt-1 text-sm font-semibold text-stone-50">
-                      {item.title}
-                    </p>
-                    {item.description && (
-                      <p className="mt-0.5 text-xs text-stone-400">
-                        {item.description}
-                      </p>
-                    )}
-                    <p className="mt-1.5 flex items-center gap-1.5 text-xs text-stone-400">
-                      <UserRound className="h-3.5 w-3.5" aria-hidden />
-                      {item.assigneeName} · {item.assigneeRole}
-                    </p>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono text-xs font-semibold tabular-nums text-amber-300">
+                      {item.startLabel}
+                    </span>
+                    <Badge
+                      variant={item.status === "DONE" ? "success" : "warning"}
+                    >
+                      {item.status === "DONE" ? "Hecha" : "Pendiente"}
+                    </Badge>
                   </div>
+                  <p className="mt-1 text-sm font-semibold text-stone-50">
+                    {item.title}
+                  </p>
+                  {item.description && (
+                    <p className="mt-0.5 text-xs text-stone-400">
+                      {item.description}
+                    </p>
+                  )}
+                  <p className="mt-1.5 text-xs text-stone-400">
+                    {item.assigneeName} · {item.assigneeRole}
+                  </p>
                 </div>
                 <div className="flex items-center gap-1">
                   <Button
@@ -253,17 +238,7 @@ export function ScheduleManager({
                     onClick={() => toggle(item)}
                     disabled={pending}
                   >
-                    {item.status === "DONE" ? (
-                      <>
-                        <RotateCcw className="h-3.5 w-3.5" aria-hidden />
-                        Reabrir
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
-                        Marcar hecha
-                      </>
-                    )}
+                    {item.status === "DONE" ? "Reabrir" : "Marcar hecha"}
                   </Button>
                   <Button
                     variant="ghost"

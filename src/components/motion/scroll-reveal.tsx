@@ -30,8 +30,14 @@ export function ScrollReveal() {
       (entries) => {
         for (const entry of entries) {
           if (!entry.isIntersecting) continue;
-          entry.target.classList.add("is-revealed");
-          observer.unobserve(entry.target);
+          const node = entry.target as HTMLElement;
+          // `data-reveal="clip"` unveils from its own edge (Grid Animations/8);
+          // the default is the quieter fade-and-rise.
+          if (node.dataset.reveal === "clip") {
+            node.classList.add("clip-in");
+          }
+          node.classList.add("is-revealed");
+          observer.unobserve(node);
         }
       },
       { rootMargin: "0px 0px -8% 0px", threshold: 0.08 },

@@ -55,7 +55,7 @@ export default async function StaffPage({
           </div>
         </div>
         <div className="flex items-center gap-2 text-xs text-stone-400">
-          <ShieldCheck className="h-4 w-4 text-emerald-600" aria-hidden />
+          <ShieldCheck className="h-4 w-4 text-emerald-400" aria-hidden />
           Permisos aplicados en el servidor
         </div>
       </Card>

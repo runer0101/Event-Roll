@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState, useTransition, type FormEvent } from "react";
-import { ArrowRight, KeyRound } from "lucide-react";
 import { loginStaff } from "@/actions/auth";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -60,13 +59,11 @@ export function StaffLoginForm() {
           disabled={pending || code.trim().length < 4}
         >
           {pending ? "Entrando…" : "Entrar a la puerta"}
-          {!pending && <ArrowRight className="h-4 w-4" aria-hidden />}
         </Button>
       </form>
 
       <div className="mt-6 rounded-xl border border-stone-800 bg-stone-950 p-4 text-sm text-stone-300">
         <p className="flex items-center gap-2 font-medium text-stone-100">
-          <KeyRound className="h-4 w-4 text-amber-300" aria-hidden />
           ¿No tienes código?
         </p>
         <p className="mt-1.5 leading-relaxed">
