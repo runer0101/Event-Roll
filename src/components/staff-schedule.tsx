@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import {
   CheckCircle2,
   Clock,
@@ -9,6 +9,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { toggleScheduleItem } from "@/actions/schedule";
+import { useAction } from "@/components/use-action";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,30 +35,29 @@ export function StaffSchedule({
 }) {
   const router = useRouter();
   const [items, setItems] = useState(initial);
-  const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const { run, pending, error } = useAction();
 
   function toggle(item: StaffScheduleItem) {
-    setError(null);
     const next = item.status === "DONE" ? "PENDING" : "DONE";
     setItems((current) =>
       current.map((row) =>
         row.id === item.id ? { ...row, status: next } : row,
       ),
     );
-    startTransition(async () => {
-      const result = await toggleScheduleItem(item.id);
-      if (result?.error) {
-        setError(result.error);
-        setItems((current) =>
-          current.map((row) =>
-            row.id === item.id ? { ...row, status: item.status } : row,
-          ),
-        );
-        return;
-      }
-      router.refresh();
-    });
+    run(
+      async () => {
+        const result = await toggleScheduleItem(item.id);
+        if (result?.error) {
+          setItems((current) =>
+            current.map((row) =>
+              row.id === item.id ? { ...row, status: item.status } : row,
+            ),
+          );
+          return result;
+        }
+      },
+      { onSuccess: () => router.refresh() },
+    );
   }
 
   return (

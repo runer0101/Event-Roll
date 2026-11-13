@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import {
   CheckCircle2,
   Clock,
@@ -15,6 +15,7 @@ import {
   deleteScheduleItem,
   toggleScheduleItem,
 } from "@/actions/schedule";
+import { useAction } from "@/components/use-action";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -53,12 +54,10 @@ export function ScheduleManager({
 }) {
   const router = useRouter();
   const [items, setItems] = useState(initial);
-  const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const { run, pending, error } = useAction();
 
   function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError(null);
     const form = event.currentTarget;
     const data = new FormData(form);
     const rawStart = String(data.get("startAt") ?? "");
@@ -71,73 +70,68 @@ export function ScheduleManager({
     const start = new Date(startAt);
     const assignee = staff.find((item) => item.id === assigneeId);
 
-    startTransition(async () => {
-      const result = await createScheduleItem(eventId, {
-        title,
-        startAt,
-        assigneeId,
-        description,
-      });
-      if (result?.error) {
-        setError(result.error);
-        return;
-      }
-      if (result.itemId) {
-        setItems((current) =>
-          [
-            ...current,
-            {
-              id: result.itemId!,
-              title,
-              description: description || null,
-              startAt: start.toISOString(),
-              startLabel: formatTime(start),
-              status: "PENDING" as const,
-              assigneeName: assignee?.name ?? "Sin asignar",
-              assigneeRole: assignee?.roleLabel ?? "Equipo",
-            },
-          ].sort((a, b) => a.startAt.localeCompare(b.startAt)),
-        );
-      }
-      form.reset();
-      router.refresh();
-    });
+    run(
+      async () => {
+        const result = await createScheduleItem(eventId, {
+          title,
+          startAt,
+          assigneeId,
+          description,
+        });
+        if (result?.error) return result;
+        if (result.itemId) {
+          setItems((current) =>
+            [
+              ...current,
+              {
+                id: result.itemId!,
+                title,
+                description: description || null,
+                startAt: start.toISOString(),
+                startLabel: formatTime(start),
+                status: "PENDING" as const,
+                assigneeName: assignee?.name ?? "Sin asignar",
+                assigneeRole: assignee?.roleLabel ?? "Equipo",
+              },
+            ].sort((a, b) => a.startAt.localeCompare(b.startAt)),
+          );
+        }
+        form.reset();
+      },
+      { onSuccess: () => router.refresh() },
+    );
   }
 
   function toggle(item: ScheduleItemView) {
-    setError(null);
     const next = item.status === "DONE" ? "PENDING" : "DONE";
     setItems((current) =>
       current.map((row) =>
         row.id === item.id ? { ...row, status: next } : row,
       ),
     );
-    startTransition(async () => {
-      const result = await toggleScheduleItem(item.id);
-      if (result?.error) {
-        setError(result.error);
-        setItems((current) =>
-          current.map((row) =>
-            row.id === item.id ? { ...row, status: item.status } : row,
-          ),
-        );
-      } else {
-        router.refresh();
-      }
-    });
+    run(
+      async () => {
+        const result = await toggleScheduleItem(item.id);
+        if (result?.error) {
+          setItems((current) =>
+            current.map((row) =>
+              row.id === item.id ? { ...row, status: item.status } : row,
+            ),
+          );
+          return result;
+        }
+      },
+      { onSuccess: () => router.refresh() },
+    );
   }
 
   function remove(item: ScheduleItemView) {
     if (!window.confirm(`¿Eliminar la tarea «${item.title}»?`)) return;
-    setError(null);
-    startTransition(async () => {
-      const result = await deleteScheduleItem(item.id);
-      if (result?.error) {
-        setError(result.error);
-        return;
-      }
-      setItems((current) => current.filter((row) => row.id !== item.id));
-      router.refresh();
+    run(async () => deleteScheduleItem(item.id), {
+      onSuccess: () => {
+        setItems((current) => current.filter((row) => row.id !== item.id));
+        router.refresh();
+      },
     });
   }
 
