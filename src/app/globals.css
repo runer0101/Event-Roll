@@ -737,17 +737,6 @@
     background-color: rgba(212, 175, 55, 0.04);
   }
 
-  /* Discreet cursor tilt: 4deg at the edge, springs back on leave. The library
-     does this with a full spring simulation; three degrees is all a form needs. */
-  .tilt-card {
-    transform: perspective(900px) rotateX(var(--tilt-x, 0deg))
-      rotateY(var(--tilt-y, 0deg));
-    transition: transform 0.45s var(--ease-spring);
-  }
-
-  .tilt-card:hover {
-    transition-duration: 0.12s;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -761,8 +750,7 @@
   }
 
   .magnetic,
-  .spotlight-card,
-  .tilt-card {
+  .spotlight-card {
     transform: none !important;
   }
 
