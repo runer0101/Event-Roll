@@ -5,6 +5,7 @@ import { auth } from '@/auth'
 import prisma from '@/lib/prisma'
 import { getActiveStaff } from '@/lib/queries/staff'
 import { searchGuestsForStaff } from '@/lib/queries/guests'
+import { GuestIdSchema, GuestSearchSchema } from '@/lib/validations/guests'
 
 type ActionResult = {
   success?: boolean
@@ -28,6 +29,11 @@ export type StaffGuestResult = {
 }
 
 export async function searchGuests(query: string): Promise<StaffGuestResult[]> {
+  // A server action receives anything at runtime: malformed input returns an
+  // empty result instead of throwing before the permission checks.
+  const parsedQuery = GuestSearchSchema.safeParse(query)
+  if (!parsedQuery.success) return []
+
   const session = await auth()
   const user = session?.user
   if (!user || user.role !== 'STAFF' || !user.staffId || !user.eventId) {
@@ -47,7 +53,7 @@ export async function searchGuests(query: string): Promise<StaffGuestResult[]> {
   const guests = await searchGuestsForStaff(
     staff.eventId,
     staff.organizationId,
-    query,
+    parsedQuery.data,
     staff.canViewContact,
     staff.canEditGuests,
   )
@@ -69,6 +75,9 @@ export async function searchGuests(query: string): Promise<StaffGuestResult[]> {
 }
 
 export async function checkInGuest(guestId: string): Promise<ActionResult> {
+  const parsedId = GuestIdSchema.safeParse(guestId)
+  if (!parsedId.success) return { error: 'Invitado inválido' }
+
   const session = await auth()
   const user = session?.user
   if (!user || user.role !== 'STAFF' || !user.staffId || !user.eventId) {
@@ -92,7 +101,7 @@ export async function checkInGuest(guestId: string): Promise<ActionResult> {
   const result = await prisma.$transaction(async (tx) => {
     const updated = await tx.guest.updateManyAndReturn({
       where: {
-        id: guestId,
+        id: parsedId.data,
         eventId: staff.eventId,
         organizationId: staff.organizationId,
         status: 'INVITED',
@@ -113,7 +122,7 @@ export async function checkInGuest(guestId: string): Promise<ActionResult> {
       data: {
         organizationId: staff.organizationId,
         eventId: staff.eventId,
-        guestId,
+        guestId: parsedId.data,
         guestName: updated[0]!.name,
         staffId: staff.id,
         action: 'CHECK_IN',
@@ -136,6 +145,9 @@ export async function checkInGuest(guestId: string): Promise<ActionResult> {
 }
 
 export async function undoCheckIn(guestId: string): Promise<ActionResult> {
+  const parsedId = GuestIdSchema.safeParse(guestId)
+  if (!parsedId.success) return { error: 'Invitado inválido' }
+
   const session = await auth()
   const user = session?.user
   if (!user) return { error: 'No autorizado' }
@@ -159,7 +171,7 @@ export async function undoCheckIn(guestId: string): Promise<ActionResult> {
 
   const guest = await prisma.guest.findFirst({
     where: {
-      id: guestId,
+      id: parsedId.data,
       organizationId: user.organizationId,
       ...(user.role === 'STAFF' ? { eventId: user.eventId } : {}),
     },

@@ -15,6 +15,10 @@ type ActionResult = {
 
 export async function createEvent(input: unknown): Promise<ActionResult> {
   const owner = await requireOwner()
+  // The demo organization is shared with every visitor: nothing in it may be
+  // created, edited or deleted with the published credentials.
+  if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
+
   const parsed = EventSchema.safeParse(input)
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos' }
@@ -44,6 +48,8 @@ export async function updateEvent(
   input: unknown,
 ): Promise<ActionResult> {
   const owner = await requireOwner()
+  if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
+
   const event = await getEventForOwner(eventId, owner.organizationId)
   if (!event) return { error: 'Evento no encontrado' }
 
@@ -68,6 +74,10 @@ export async function setEventStatus(
   input: unknown,
 ): Promise<ActionResult> {
   const owner = await requireOwner()
+  // Closing the demo event with the published credentials would end the demo
+  // for every visitor, so the status is part of the read-only surface too.
+  if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
+
   const event = await getEventForOwner(eventId, owner.organizationId)
   if (!event) return { error: 'Evento no encontrado' }
 
