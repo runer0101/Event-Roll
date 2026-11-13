@@ -76,6 +76,8 @@ Two rules keep it honest:
 - **Motion has a source and a reason.** The headline rises line by line out of a clip mask and a hairline draws itself under the header, both adapted from the owner's animation library. A grid drifts behind the type on one compositor transform. No animation library is installed; every effect is CSS.
 - **It degrades on purpose.** Below 900px the background stops moving, `prefers-reduced-motion` freezes every entrance, and every route ships a `loading.tsx` that mirrors its real layout so a page never jumps from blank to full.
 
+**Two themes.** The toggle in the header switches between ink and paper. The palette is inverted, not duplicated: `stone-950` stays the page, `stone-50` stays the text, so every screen built for ink reads correctly on paper. The choice is stored per browser and applied by a small inline script before the first paint, which is why the page never flashes the wrong theme.
+
 Contrast, a visible focus ring and an announced loading state (`role="status"`) are part of the same rule set, not a later pass.
 
 ## Engineering highlights
