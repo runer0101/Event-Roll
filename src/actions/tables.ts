@@ -83,13 +83,15 @@ export async function deleteTable(
 
 export async function toggleChair(chairId: string): Promise<ActionResult> {
   const owner = await requireOwner()
-  // The demo organization is shared: its floor plan must survive the visitors.
-  if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
-
   const parsedId = ChairIdSchema.safeParse(chairId)
   // One message for every malformed id: the caller gets a handled error, never
-  // the TypeError or Prisma failure a raw value used to cause.
+  // the TypeError or Prisma failure a raw value used to cause. Validation is
+  // local, so it can run before the demo guard without touching the database.
   if (!parsedId.success) return { error: 'Silla inválida' }
+  // The demo organization is shared: its floor plan must survive the visitors.
+  // The guard still precedes the read, so a visitor cannot probe which chair ids
+  // exist, while a malformed id keeps its own message.
+  if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
 
   const chair = await prisma.chair.findFirst({
     where: { id: parsedId.data, organizationId: owner.organizationId },
