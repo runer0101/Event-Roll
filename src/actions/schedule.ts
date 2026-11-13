@@ -69,8 +69,9 @@ export async function toggleScheduleItem(
   const session = await auth()
   const user = session?.user
   if (!user) return { error: 'No autorizado' }
-  // The published schedule of the demo is part of what visitors come to see.
-  if (user.role === 'OWNER' && isDemoOwner({ email: user.email ?? '' })) {
+  // The published schedule of the demo is part of what visitors come to see,
+  // and the seeded staff code is public too, so the check is not owner-only.
+  if (isDemoOwner({ email: user.email ?? '' })) {
     return { error: DEMO_READ_ONLY_MESSAGE }
   }
 
