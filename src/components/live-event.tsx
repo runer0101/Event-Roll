@@ -12,11 +12,16 @@ import {
 } from "lucide-react";
 import { undoCheckIn } from "@/actions/checkin";
 import type { LiveData } from "@/lib/queries/live";
+import {
+  INITIAL_LIVE_POLL,
+  applyPollResult,
+  liveBadge,
+} from "@/lib/live-status";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { initials } from "@/lib/utils";
+import { cn, initials } from "@/lib/utils";
 
 export function LiveEvent({
   eventId,
@@ -29,6 +34,14 @@ export function LiveEvent({
 }) {
   const router = useRouter();
   const [data, setData] = useState(initial);
+  // A refreshed server prop has to replace what `useState(initial)` captured
+  // on mount, or the panel keeps showing the first render forever.
+  const [syncedInitial, setSyncedInitial] = useState(initial);
+  if (syncedInitial !== initial) {
+    setSyncedInitial(initial);
+    setData(initial);
+  }
+  const [poll, setPoll] = useState(INITIAL_LIVE_POLL);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -37,10 +50,22 @@ export function LiveEvent({
       const response = await fetch(`/api/events/${eventId}/live`, {
         cache: "no-store",
       });
-      if (!response.ok) return;
+      if (!response.ok) {
+        // Keep polling, but stop claiming the numbers are current.
+        setPoll((current) =>
+          applyPollResult(current, { ok: false, at: Date.now() }),
+        );
+        return;
+      }
       setData((await response.json()) as LiveData);
+      setPoll((current) =>
+        applyPollResult(current, { ok: true, at: Date.now() }),
+      );
     } catch {
-      // A failed poll should not break the dashboard.
+      // A failed poll must not break the dashboard, and it must not look live.
+      setPoll((current) =>
+        applyPollResult(current, { ok: false, at: Date.now() }),
+      );
     }
   }, [eventId]);
 
@@ -65,6 +90,7 @@ export function LiveEvent({
   }
 
   const { stats, recent, staff } = data;
+  const badge = liveBadge(poll);
 
   return (
     <div className="space-y-6">
@@ -75,13 +101,25 @@ export function LiveEvent({
           <h2 className="font-display text-2xl font-medium tracking-tight text-stone-50">
             Accesos en vivo
           </h2>
-          <p className="text-sm text-stone-400">
-            Se actualiza automáticamente cada 3 segundos.
-          </p>
+          <p className="text-sm text-stone-400">{badge.caption}</p>
         </div>
-        <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-          En vivo
+        <span
+          className={cn(
+            "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium",
+            badge.tone === "live"
+              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+              : "border-amber-500/30 bg-amber-500/10 text-amber-200",
+          )}
+        >
+          <span
+            className={cn(
+              "h-1.5 w-1.5 rounded-full",
+              badge.tone === "live"
+                ? "animate-pulse bg-emerald-500"
+                : "bg-amber-400",
+            )}
+          />
+          {badge.label}
         </span>
       </div>
 

@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import { progressRate } from '@/lib/queries/events'
 import { formatTime } from '@/lib/utils'
 
 export type LiveFeedItem = {
@@ -77,7 +78,7 @@ export async function getLiveData(
       total,
       checkedIn,
       pending: total - checkedIn,
-      rate: total === 0 ? 0 : Math.round((checkedIn / total) * 100),
+      rate: progressRate(checkedIn, total),
     },
     recent: recent.map((log) => ({
       id: log.id,
