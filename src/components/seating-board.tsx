@@ -41,12 +41,14 @@ export function SeatingBoard({ initial }: { initial: TableView[] }) {
   // `useState(initial)` alone would ignore a refreshed server prop, so a table
   // created in the form above only showed up after a full reload.
   const [syncedInitial, setSyncedInitial] = useState(initial);
-  if (syncedInitial !== initial) {
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  // Skip the sync while a toggle is in flight: a refresh landing mid-request
+  // would overwrite the optimistic state of the chair being clicked.
+  if (!pending && syncedInitial !== initial) {
     setSyncedInitial(initial);
     setTables(initial);
   }
-  const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
 
   const totalChairs = tables.reduce((sum, table) => sum + table.chairs.length, 0);
   const occupied = tables.reduce(
