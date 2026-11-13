@@ -18,7 +18,10 @@ export function TableCreateForm({ eventId }: { eventId: string }) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    const data = new FormData(event.currentTarget);
+    // React nulls `currentTarget` as soon as the handler yields, so the form
+    // element is kept here: resetting it after the await is what used to throw.
+    const form = event.currentTarget;
+    const data = new FormData(form);
     startTransition(async () => {
       const result = await createTable(eventId, {
         name: data.get("name"),
@@ -28,7 +31,7 @@ export function TableCreateForm({ eventId }: { eventId: string }) {
         setError(result.error);
         return;
       }
-      event.currentTarget.reset();
+      form.reset();
       router.refresh();
     });
   }
