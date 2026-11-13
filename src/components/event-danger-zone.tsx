@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Lock, LockOpen, Trash2 } from "lucide-react";
 import { deleteEvent, setEventStatus } from "@/actions/events";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -61,7 +60,7 @@ export function EventDangerZone({
             </h3>
             <p className="mt-1 max-w-xl text-sm text-stone-400">
               {isActive
-                ? "Al cerrarlo, los guardias ya no podrán marcar entradas. La lista y el historial se conservan."
+                ? "Al cerrarlo, los asistentes ya no podrán marcar entradas. La lista y el historial se conservan."
                 : "Vuelve a habilitar el check-in para este evento."}
             </p>
           </div>
@@ -71,17 +70,7 @@ export function EventDangerZone({
             onClick={toggleStatus}
             disabled={pending}
           >
-            {isActive ? (
-              <>
-                <Lock className="h-3.5 w-3.5" aria-hidden />
-                Cerrar evento
-              </>
-            ) : (
-              <>
-                <LockOpen className="h-3.5 w-3.5" aria-hidden />
-                Reabrir evento
-              </>
-            )}
+            {isActive ? "Cerrar evento" : "Reabrir evento"}
           </Button>
         </div>
       </Card>
@@ -103,7 +92,6 @@ export function EventDangerZone({
             onClick={remove}
             disabled={pending}
           >
-            <Trash2 className="h-3.5 w-3.5" aria-hidden />
             Eliminar evento
           </Button>
         </div>

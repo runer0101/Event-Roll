@@ -67,7 +67,7 @@ export function Dialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/70 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/70 p-4 "
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
@@ -79,7 +79,7 @@ export function Dialog({
         ref={panelRef}
         tabIndex={-1}
         className={cn(
-          "modal-in max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-stone-800 bg-stone-900 p-6 shadow-2xl focus:outline-none",
+ "modal-in max-h-[90vh] w-full overflow-y-auto  border border-stone-800 bg-stone-900 p-6  focus:outline-none",
           maxWidth,
         )}
       >
@@ -89,7 +89,7 @@ export function Dialog({
             <h2
               id={titleId}
               className={cn(
-                "font-display text-2xl font-medium text-stone-50",
+ "font-display text-2xl font-medium text-stone-50",
                 eyebrow != null && "mt-2",
               )}
             >
@@ -103,7 +103,7 @@ export function Dialog({
             type="button"
             onClick={onClose}
             disabled={!dismissible}
-            className="rounded-lg p-1 text-stone-500 transition hover:bg-stone-800 hover:text-stone-200"
+            className=" p-1 text-stone-500 transition hover:bg-stone-800 hover:text-stone-200"
             aria-label="Cerrar"
           >
             <X className="h-5 w-5" />

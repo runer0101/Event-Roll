@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState, useTransition, type FormEvent } from "react";
-import { ArrowRight } from "lucide-react";
 import { registerOrganizer } from "@/actions/auth";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -100,7 +99,6 @@ export function RegisterForm() {
           disabled={pending}
         >
           {pending ? "Creando cuenta…" : "Crear cuenta"}
-          {!pending && <ArrowRight className="h-4 w-4" aria-hidden />}
         </Button>
       </form>
 

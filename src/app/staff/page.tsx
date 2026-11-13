@@ -6,7 +6,7 @@ import { GoldParticles } from "@/components/motion/gold-particles";
 import { Brand } from "@/components/ui/brand";
 import { getStaffForSession } from "@/lib/queries/staff";
 
-export const metadata = { title: "Acceso de guardia" };
+export const metadata = { title: "Acceso de asistente" };
 
 export default async function StaffLoginPage() {
   const session = await auth();

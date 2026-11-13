@@ -16,8 +16,8 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-svh bg-stone-950">
-      <header className="sticky top-0 z-30 border-b border-stone-800/70 bg-stone-950/80 backdrop-blur-xl">
-        <div className="h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
+      <header className="sticky top-0 z-30 border-b border-stone-800/70 bg-stone-950/80 ">
+        <div className="h-px bg-stone-800" />
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-5">
             <Link href="/dashboard" className="group flex items-center gap-2.5">
@@ -44,10 +44,10 @@ export default async function DashboardLayout({
               href="/staff"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden items-center gap-1.5 rounded-xl border border-stone-700/80 bg-stone-900/60 px-3 py-2 text-xs font-medium text-stone-200 backdrop-blur-sm transition hover:border-amber-400/50 hover:bg-stone-800/80 hover:text-amber-100 sm:inline-flex"
+              className="hidden items-center gap-1.5  border border-stone-700/80 bg-stone-900/60 px-3 py-2 text-xs font-medium text-stone-200  transition hover:border-amber-400/50 hover:bg-stone-800/80 hover:text-amber-100 sm:inline-flex"
             >
               <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-              Vista guardia
+              Vista asistente
             </Link>
             <form action={logout}>
               <Button variant="ghost" size="sm" type="submit">

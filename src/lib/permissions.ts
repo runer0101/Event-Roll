@@ -46,7 +46,7 @@ export const PERMISSION_LABELS = [
   {
     key: 'canViewStats',
     label: 'Ver estadísticas',
-    description: 'Ver el avance de entradas en la pantalla de guardia.',
+    description: 'Ver el avance de entradas en la pantalla de asistente.',
   },
 ] as const satisfies Array<{
   key: keyof StaffPermissions
