@@ -56,7 +56,7 @@ export const metadata: Metadata = {
 
 // Applies the stored theme before the first paint, so the page never flashes
 // the wrong one. Kept as a string: it has to run ahead of React.
-const themeScript = `(function(){try{var t=localStorage.getItem("event-roll-theme");if(t==="light"||t==="dark"){document.documentElement.dataset.theme=t}}catch(e){}})()`;
+const themeScript = `(function(){try{var s=localStorage.getItem("event-roll-theme");var t=(s==="light"||s==="dark")?s:(window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");document.documentElement.dataset.theme=t}catch(e){}})()`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

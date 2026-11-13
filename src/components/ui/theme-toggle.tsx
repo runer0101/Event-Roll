@@ -1,10 +1,15 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { resolveTheme, THEME_STORAGE_KEY, type Theme } from "@/lib/theme";
 
-type Theme = "dark" | "light";
-
-const STORAGE_KEY = "event-roll-theme";
+function storedTheme(): string | null {
+  try {
+    return window.localStorage.getItem(THEME_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
 
 function subscribe(onChange: () => void) {
   const observer = new MutationObserver(onChange);
@@ -12,7 +17,21 @@ function subscribe(onChange: () => void) {
     attributes: true,
     attributeFilter: ["data-theme"],
   });
-  return () => observer.disconnect();
+
+  // A visitor who never chose a theme follows their system, live.
+  const media = window.matchMedia("(prefers-color-scheme: light)");
+  function followSystem() {
+    const stored = storedTheme();
+    if (stored === "light" || stored === "dark") return;
+    document.documentElement.dataset.theme = resolveTheme(null, media.matches);
+    onChange();
+  }
+  media.addEventListener("change", followSystem);
+
+  return () => {
+    observer.disconnect();
+    media.removeEventListener("change", followSystem);
+  };
 }
 
 function getSnapshot(): Theme {
@@ -38,7 +57,7 @@ export function ThemeToggle({ className }: { className?: string }) {
     const next: Theme = theme === "dark" ? "light" : "dark";
     document.documentElement.dataset.theme = next;
     try {
-      window.localStorage.setItem(STORAGE_KEY, next);
+      window.localStorage.setItem(THEME_STORAGE_KEY, next);
     } catch {
       // Private mode or blocked storage: the theme still applies for this page.
     }
