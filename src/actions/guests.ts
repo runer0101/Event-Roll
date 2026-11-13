@@ -13,14 +13,13 @@ import {
   GuestSchema,
   ImportGuestsSchema,
 } from '@/lib/validations/guests'
+import type { ActionResult as SharedActionResult } from '@/lib/action-result'
 
-type ActionResult = {
-  success?: boolean
-  error?: string
+type ActionResult = SharedActionResult<{
   guestId?: string
   imported?: number
   skipped?: number
-}
+}>
 
 function optional(value: string | undefined): string | null {
   const trimmed = value?.trim()

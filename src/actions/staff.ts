@@ -11,13 +11,12 @@ import {
   StaffSchema,
   StaffUpdateSchema,
 } from '@/lib/validations/staff'
+import type { ActionResult as SharedActionResult } from '@/lib/action-result'
 
-type ActionResult = {
-  success?: boolean
-  error?: string
+type ActionResult = SharedActionResult<{
   staffId?: string
   code?: string
-}
+}>
 
 export async function createStaff(
   eventId: string,

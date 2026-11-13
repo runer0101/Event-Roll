@@ -6,12 +6,11 @@ import prisma from '@/lib/prisma'
 import { searchGuestsForStaff } from '@/lib/queries/guests'
 import { resolveStaff } from '@/lib/session'
 import { GuestIdSchema, GuestSearchSchema } from '@/lib/validations/guests'
+import type { ActionResult as SharedActionResult } from '@/lib/action-result'
 
-type ActionResult = {
-  success?: boolean
-  error?: string
+type ActionResult = SharedActionResult<{
   alreadyCheckedIn?: boolean
-}
+}>
 
 export type StaffGuestResult = {
   id: string
