@@ -25,7 +25,7 @@ export default async function DashboardPage() {
   const now = new Date();
   const upcoming = events.filter((event) => event.date >= now);
   const totalGuests = events.reduce(
-    (sum, event) => sum + event._count.guests,
+    (sum, event) => sum + event.countedGuests,
     0,
   );
   const totalCheckedIn = events.reduce(

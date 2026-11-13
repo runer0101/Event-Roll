@@ -1,5 +1,5 @@
 import prisma from '@/lib/prisma'
-import { progressRate } from '@/lib/queries/events'
+import { getEventAttendance, type EventAttendance } from '@/lib/queries/events'
 import { formatTime } from '@/lib/utils'
 
 export type LiveFeedItem = {
@@ -22,12 +22,7 @@ export type LiveStaffItem = {
 }
 
 export type LiveData = {
-  stats: {
-    total: number
-    checkedIn: number
-    pending: number
-    rate: number
-  }
+  stats: EventAttendance
   recent: LiveFeedItem[]
   staff: LiveStaffItem[]
   updatedAt: string
@@ -37,13 +32,8 @@ export async function getLiveData(
   eventId: string,
   organizationId: string,
 ): Promise<LiveData> {
-  const [total, checkedIn, recent, staff] = await Promise.all([
-    prisma.guest.count({
-      where: { eventId, organizationId, status: { not: 'CANCELLED' } },
-    }),
-    prisma.guest.count({
-      where: { eventId, organizationId, status: 'CHECKED_IN' },
-    }),
+  const [attendance, recent, staff] = await Promise.all([
+    getEventAttendance(eventId, organizationId),
     prisma.accessLog.findMany({
       where: {
         eventId,
@@ -74,12 +64,7 @@ export async function getLiveData(
   ])
 
   return {
-    stats: {
-      total,
-      checkedIn,
-      pending: total - checkedIn,
-      rate: progressRate(checkedIn, total),
-    },
+    stats: attendance,
     recent: recent.map((log) => ({
       id: log.id,
       guestId: log.guest?.id ?? null,

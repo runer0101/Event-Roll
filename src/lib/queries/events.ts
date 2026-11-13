@@ -24,12 +24,45 @@ export function progressRate(checkedIn: number, countedGuests: number): number {
   return countedGuests <= 0 ? 0 : Math.round((checkedIn / countedGuests) * 100)
 }
 
+export type EventAttendance = {
+  total: number
+  checkedIn: number
+  pending: number
+  rate: number
+}
+
+/**
+ * The one attendance definition shared by the dashboard, the live panel and
+ * the guard counters. Cancelled invitations never reach the denominator, and
+ * `pending` is the number of guests still holding an invitation.
+ */
+export async function getEventAttendance(
+  eventId: string,
+  organizationId: string,
+): Promise<EventAttendance> {
+  const [total, checkedIn, pending] = await Promise.all([
+    prisma.guest.count({
+      where: { eventId, organizationId, status: { not: 'CANCELLED' } },
+    }),
+    prisma.guest.count({
+      where: { eventId, organizationId, status: 'CHECKED_IN' },
+    }),
+    prisma.guest.count({
+      where: { eventId, organizationId, status: 'INVITED' },
+    }),
+  ])
+
+  return { total, checkedIn, pending, rate: progressRate(checkedIn, total) }
+}
+
 export async function getEventsForOwner(organizationId: string) {
   const events = await prisma.event.findMany({
     where: { organizationId },
     orderBy: { date: 'asc' },
     include: {
-      _count: { select: { guests: true, staff: true } },
+      // Only the staff count is displayed per event; guest totals come from
+      // `countedGuests` so cancelled invitations never reach the card.
+      _count: { select: { staff: true } },
     },
   })
 
@@ -69,17 +102,12 @@ export async function getEventCounters(
   eventId: string,
   organizationId: string,
 ) {
-  const [total, checkedIn, staff] = await Promise.all([
-    prisma.guest.count({
-      where: { eventId, organizationId, status: { not: 'CANCELLED' } },
-    }),
-    prisma.guest.count({
-      where: { eventId, organizationId, status: 'CHECKED_IN' },
-    }),
+  const [attendance, staff] = await Promise.all([
+    getEventAttendance(eventId, organizationId),
     prisma.staff.count({
       where: { eventId, organizationId, active: true },
     }),
   ])
 
-  return { total, checkedIn, pending: total - checkedIn, staff }
+  return { ...attendance, staff }
 }
