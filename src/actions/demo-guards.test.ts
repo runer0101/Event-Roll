@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   requireOwner: vi.fn(),
   tableFindFirst: vi.fn(),
   tableDelete: vi.fn(),
+  chairFindFirst: vi.fn(),
   chairUpdateMany: vi.fn(),
   scheduleFindFirst: vi.fn(),
   scheduleDelete: vi.fn(),
@@ -15,7 +16,10 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 vi.mock('@/lib/prisma', () => ({
   default: {
     eventTable: { findFirst: mocks.tableFindFirst, delete: mocks.tableDelete },
-    chair: { updateMany: mocks.chairUpdateMany },
+    chair: {
+      findFirst: mocks.chairFindFirst,
+      updateMany: mocks.chairUpdateMany,
+    },
     scheduleItem: {
       findFirst: mocks.scheduleFindFirst,
       delete: mocks.scheduleDelete,
@@ -25,7 +29,7 @@ vi.mock('@/lib/prisma', () => ({
 
 import { DEMO_READ_ONLY_MESSAGE } from '@/lib/demo'
 import { deleteScheduleItem } from './schedule'
-import { deleteTable, resetTable } from './tables'
+import { deleteTable, resetTable, toggleChair } from './tables'
 
 const DEMO_OWNER = {
   userId: 'u1',
@@ -47,6 +51,15 @@ describe('the demo organization is read-only for every destructive action', () =
 
     expect(result.error).toBe(DEMO_READ_ONLY_MESSAGE)
     expect(mocks.tableDelete).not.toHaveBeenCalled()
+  })
+
+  it('refuses to occupy or free a chair', async () => {
+    mocks.chairFindFirst.mockResolvedValue({ id: 'c1', eventId: 'e1', occupied: false })
+
+    const result = await toggleChair('c1')
+
+    expect(result.error).toBe(DEMO_READ_ONLY_MESSAGE)
+    expect(mocks.chairUpdateMany).not.toHaveBeenCalled()
   })
 
   it('refuses to reset a table, which wipes seat assignments', async () => {
