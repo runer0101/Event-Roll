@@ -65,6 +65,14 @@ describe('the demo organization is read-only for every destructive action', () =
     expect(mocks.chairUpdateMany).not.toHaveBeenCalled()
   })
 
+  it('keeps the validation message for a malformed id and still reads nothing', async () => {
+    const result = await toggleChair('x'.repeat(65))
+
+    expect(result.error).toBe('Silla inválida')
+    expect(mocks.chairFindFirst).not.toHaveBeenCalled()
+    expect(mocks.chairUpdateMany).not.toHaveBeenCalled()
+  })
+
   it('refuses to reset a table, which wipes seat assignments', async () => {
     mocks.tableFindFirst.mockResolvedValue({ id: 't1', eventId: 'e1' })
 
