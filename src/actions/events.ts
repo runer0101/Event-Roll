@@ -7,12 +7,11 @@ import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
 import { requireOwner } from '@/lib/session'
 import { getEventForOwner } from '@/lib/queries/events'
 import { EventSchema, EventStatusSchema } from '@/lib/validations/events'
+import type { ActionResult as SharedActionResult } from '@/lib/action-result'
 
-type ActionResult = {
-  success?: boolean
-  error?: string
+type ActionResult = SharedActionResult<{
   eventId?: string
-}
+}>
 
 export async function createEvent(input: unknown): Promise<ActionResult> {
   const owner = await requireOwner()

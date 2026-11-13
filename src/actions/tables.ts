@@ -8,15 +8,14 @@ import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
 import { requireOwner } from '@/lib/session'
 import { getEventForOwner } from '@/lib/queries/events'
 import { TableSchema } from '@/lib/validations/tables'
+import type { ActionResult as SharedActionResult } from '@/lib/action-result'
 
 const ChairIdSchema = idSchema('Silla inválida')
 
-type ActionResult = {
-  success?: boolean
-  error?: string
+type ActionResult = SharedActionResult<{
   tableId?: string
   occupied?: boolean
-}
+}>
 
 export async function createTable(
   eventId: string,

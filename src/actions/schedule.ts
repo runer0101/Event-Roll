@@ -7,13 +7,12 @@ import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
 import { requireOwner, resolveStaff } from '@/lib/session'
 import { getEventForOwner } from '@/lib/queries/events'
 import { ScheduleItemSchema } from '@/lib/validations/schedule'
+import type { ActionResult as SharedActionResult } from '@/lib/action-result'
 
-type ActionResult = {
-  success?: boolean
-  error?: string
+type ActionResult = SharedActionResult<{
   itemId?: string
   status?: 'PENDING' | 'DONE'
-}
+}>
 
 export async function createScheduleItem(
   eventId: string,
