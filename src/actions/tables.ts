@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidateEvent } from '@/lib/revalidate'
-import { z } from 'zod'
+import { idSchema } from '@/lib/validations/common'
 import prisma from '@/lib/prisma'
 import { Prisma } from '@/generated/prisma/client'
 import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
@@ -9,9 +9,7 @@ import { requireOwner } from '@/lib/session'
 import { getEventForOwner } from '@/lib/queries/events'
 import { TableSchema } from '@/lib/validations/tables'
 
-// A server action receives anything at runtime, so an id arrives as whatever
-// the caller sent; the same shape as the guest id schema keeps it bounded.
-const ChairIdSchema = z.string().trim().min(1).max(64)
+const ChairIdSchema = idSchema('Silla inválida')
 
 type ActionResult = {
   success?: boolean

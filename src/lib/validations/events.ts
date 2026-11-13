@@ -9,4 +9,3 @@ export const EventSchema = z.object({
 
 export const EventStatusSchema = z.enum(['ACTIVE', 'CLOSED'])
 
-export type EventInput = z.infer<typeof EventSchema>

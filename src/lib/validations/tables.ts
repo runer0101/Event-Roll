@@ -9,4 +9,3 @@ export const TableSchema = z.object({
     .max(20, 'Máximo 20 sillas por mesa'),
 })
 
-export type TableInput = z.infer<typeof TableSchema>
