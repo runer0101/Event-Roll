@@ -28,5 +28,3 @@ export const StaffCodeSchema = z.object({
     .transform((value) => value.toUpperCase()),
 })
 
-export type RegisterInput = z.infer<typeof RegisterSchema>
-export type LoginInput = z.infer<typeof LoginSchema>

@@ -1,17 +1,16 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateEvent } from '@/lib/revalidate'
 import { auth } from '@/auth'
 import prisma from '@/lib/prisma'
-import { getActiveStaff } from '@/lib/queries/staff'
 import { searchGuestsForStaff } from '@/lib/queries/guests'
+import { resolveStaff } from '@/lib/session'
 import { GuestIdSchema, GuestSearchSchema } from '@/lib/validations/guests'
+import type { ActionResult as SharedActionResult } from '@/lib/action-result'
 
-type ActionResult = {
-  success?: boolean
-  error?: string
+type ActionResult = SharedActionResult<{
   alreadyCheckedIn?: boolean
-}
+}>
 
 export type StaffGuestResult = {
   id: string
@@ -34,19 +33,12 @@ export async function searchGuests(query: string): Promise<StaffGuestResult[]> {
   const parsedQuery = GuestSearchSchema.safeParse(query)
   if (!parsedQuery.success) return []
 
-  const session = await auth()
-  const user = session?.user
-  if (!user || user.role !== 'STAFF' || !user.staffId || !user.eventId) {
-    return []
-  }
-
-  const staff = await getActiveStaff(
-    user.staffId,
-    user.eventId,
-    user.organizationId,
-    user.staffSessionVersion ?? -1,
-  )
-  if (!staff || !staff.canCheckIn || staff.event.status !== 'ACTIVE') {
+  // A failed resolution is an empty result, not an error: the door screen
+  // shows "no matches" either way and must not leak why.
+  const access = await resolveStaff((await auth())?.user)
+  if (!access.ok) return []
+  const { staff } = access
+  if (!staff.canCheckIn || staff.event.status !== 'ACTIVE') {
     return []
   }
 
@@ -78,19 +70,9 @@ export async function checkInGuest(guestId: string): Promise<ActionResult> {
   const parsedId = GuestIdSchema.safeParse(guestId)
   if (!parsedId.success) return { error: 'Invitado inválido' }
 
-  const session = await auth()
-  const user = session?.user
-  if (!user || user.role !== 'STAFF' || !user.staffId || !user.eventId) {
-    return { error: 'No autorizado' }
-  }
-
-  const staff = await getActiveStaff(
-    user.staffId,
-    user.eventId,
-    user.organizationId,
-    user.staffSessionVersion ?? -1,
-  )
-  if (!staff) return { error: 'Tu acceso está inactivo' }
+  const access = await resolveStaff((await auth())?.user)
+  if (!access.ok) return { error: access.error }
+  const { staff } = access
   if (!staff.canCheckIn) {
     return { error: 'No tienes permiso para hacer check-in' }
   }
@@ -138,9 +120,7 @@ export async function checkInGuest(guestId: string): Promise<ActionResult> {
       alreadyCheckedIn: true,
     }
   }
-
-  revalidatePath(`/staff/event/${staff.eventId}`, 'layout')
-  revalidatePath(`/dashboard/events/${staff.eventId}`, 'layout')
+  revalidateEvent(staff.eventId)
   return { success: true }
 }
 
@@ -156,17 +136,12 @@ export async function undoCheckIn(guestId: string): Promise<ActionResult> {
   // permission should not learn whether a guest ID exists.
   let staffId: string | null = null
   if (user.role === 'STAFF') {
-    if (!user.staffId || !user.eventId) return { error: 'No autorizado' }
-    const staff = await getActiveStaff(
-      user.staffId,
-      user.eventId,
-      user.organizationId,
-      user.staffSessionVersion ?? -1,
-    )
-    if (!staff?.canUndoCheckIn) {
+    const access = await resolveStaff(user)
+    if (!access.ok) return { error: access.error }
+    if (!access.staff.canUndoCheckIn) {
       return { error: 'No tienes permiso para deshacer check-ins' }
     }
-    staffId = staff.id
+    staffId = access.staff.id
   }
 
   const guest = await prisma.guest.findFirst({
@@ -215,8 +190,6 @@ export async function undoCheckIn(guestId: string): Promise<ActionResult> {
   if (!undone) {
     return { error: 'Ese invitado ya no tiene una entrada activa' }
   }
-
-  revalidatePath(`/staff/event/${guest.eventId}`, 'layout')
-  revalidatePath(`/dashboard/events/${guest.eventId}`, 'layout')
+  revalidateEvent(guest.eventId)
   return { success: true }
 }

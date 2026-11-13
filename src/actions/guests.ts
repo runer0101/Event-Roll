@@ -1,12 +1,11 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateEvent } from '@/lib/revalidate'
 import { auth } from '@/auth'
 import prisma from '@/lib/prisma'
 import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
-import { requireOwner } from '@/lib/session'
+import { requireOwner, resolveStaff } from '@/lib/session'
 import { getEventForOwner } from '@/lib/queries/events'
-import { getActiveStaff } from '@/lib/queries/staff'
 import { guestDedupeKey } from '@/lib/guests'
 import { generateGuestCode, normalizeText } from '@/lib/utils'
 import {
@@ -14,14 +13,13 @@ import {
   GuestSchema,
   ImportGuestsSchema,
 } from '@/lib/validations/guests'
+import type { ActionResult as SharedActionResult } from '@/lib/action-result'
 
-type ActionResult = {
-  success?: boolean
-  error?: string
+type ActionResult = SharedActionResult<{
   guestId?: string
   imported?: number
   skipped?: number
-}
+}>
 
 function optional(value: string | undefined): string | null {
   const trimmed = value?.trim()
@@ -62,7 +60,7 @@ export async function createGuest(
     },
   })
 
-  revalidatePath(`/dashboard/events/${event.id}`, 'layout')
+  revalidateEvent(event.id)
   return { success: true, guestId: guest.id }
 }
 
@@ -90,14 +88,9 @@ export async function updateGuest(
   // Check the permission before looking the guest up so an unprivileged staff
   // member cannot use the response to probe guest IDs.
   if (user.role === 'STAFF') {
-    if (!user.staffId || !user.eventId) return { error: 'No autorizado' }
-    const staff = await getActiveStaff(
-      user.staffId,
-      user.eventId,
-      user.organizationId,
-      user.staffSessionVersion ?? -1,
-    )
-    if (!staff?.canEditGuests) {
+    const access = await resolveStaff(user)
+    if (!access.ok) return { error: access.error }
+    if (!access.staff.canEditGuests) {
       return { error: 'No tienes permiso para editar invitados' }
     }
   }
@@ -126,8 +119,7 @@ export async function updateGuest(
     },
   })
 
-  revalidatePath(`/dashboard/events/${guest.eventId}`, 'layout')
-  revalidatePath(`/staff/event/${guest.eventId}`, 'layout')
+  revalidateEvent(guest.eventId)
   return { success: true, guestId: guest.id }
 }
 
@@ -145,7 +137,7 @@ export async function deleteGuest(guestId: string): Promise<ActionResult> {
   if (!guest) return { error: 'Invitado no encontrado' }
 
   await prisma.guest.delete({ where: { id: guest.id } })
-  revalidatePath(`/dashboard/events/${guest.eventId}`, 'layout')
+  revalidateEvent(guest.eventId)
   return { success: true }
 }
 
@@ -225,6 +217,6 @@ export async function importGuests(
     { timeout: 15_000 },
   )
 
-  revalidatePath(`/dashboard/events/${event.id}`, 'layout')
+  revalidateEvent(event.id)
   return { success: true, imported: result.imported, skipped: result.skipped }
 }

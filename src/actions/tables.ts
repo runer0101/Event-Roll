@@ -1,24 +1,21 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
-import { z } from 'zod'
+import { revalidateEvent } from '@/lib/revalidate'
+import { idSchema } from '@/lib/validations/common'
 import prisma from '@/lib/prisma'
 import { Prisma } from '@/generated/prisma/client'
 import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
 import { requireOwner } from '@/lib/session'
 import { getEventForOwner } from '@/lib/queries/events'
 import { TableSchema } from '@/lib/validations/tables'
+import type { ActionResult as SharedActionResult } from '@/lib/action-result'
 
-// A server action receives anything at runtime, so an id arrives as whatever
-// the caller sent; the same shape as the guest id schema keeps it bounded.
-const ChairIdSchema = z.string().trim().min(1).max(64)
+const ChairIdSchema = idSchema('Silla inválida')
 
-type ActionResult = {
-  success?: boolean
-  error?: string
+type ActionResult = SharedActionResult<{
   tableId?: string
   occupied?: boolean
-}
+}>
 
 export async function createTable(
   eventId: string,
@@ -53,7 +50,7 @@ export async function createTable(
       },
     })
 
-    revalidatePath(`/dashboard/events/${event.id}`, 'layout')
+    revalidateEvent(event.id)
     return { success: true, tableId: table.id }
   } catch (error) {
     if (
@@ -79,7 +76,7 @@ export async function deleteTable(
   if (!table) return { error: 'Mesa no encontrada' }
 
   await prisma.eventTable.delete({ where: { id: table.id } })
-  revalidatePath(`/dashboard/events/${table.eventId}`, 'layout')
+  revalidateEvent(table.eventId)
   return { success: true }
 }
 
@@ -87,8 +84,13 @@ export async function toggleChair(chairId: string): Promise<ActionResult> {
   const owner = await requireOwner()
   const parsedId = ChairIdSchema.safeParse(chairId)
   // One message for every malformed id: the caller gets a handled error, never
-  // the TypeError or Prisma failure a raw value used to cause.
+  // the TypeError or Prisma failure a raw value used to cause. Validation is
+  // local, so it can run before the demo guard without touching the database.
   if (!parsedId.success) return { error: 'Silla inválida' }
+  // The demo organization is shared: its floor plan must survive the visitors.
+  // The guard still precedes the read, so a visitor cannot probe which chair ids
+  // exist, while a malformed id keeps its own message.
+  if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
 
   const chair = await prisma.chair.findFirst({
     where: { id: parsedId.data, organizationId: owner.organizationId },
@@ -108,7 +110,7 @@ export async function toggleChair(chairId: string): Promise<ActionResult> {
     },
     data: { occupied },
   })
-  revalidatePath(`/dashboard/events/${chair.eventId}`, 'layout')
+  revalidateEvent(chair.eventId)
 
   if (changed.count > 0) return { success: true, occupied }
 
@@ -135,6 +137,6 @@ export async function resetTable(tableId: string): Promise<ActionResult> {
     where: { tableId: table.id },
     data: { occupied: false, guestName: null },
   })
-  revalidatePath(`/dashboard/events/${table.eventId}`, 'layout')
+  revalidateEvent(table.eventId)
   return { success: true }
 }

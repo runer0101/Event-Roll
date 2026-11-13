@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateEvent } from '@/lib/revalidate'
 import prisma from '@/lib/prisma'
 import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
 import { requireOwner } from '@/lib/session'
@@ -11,13 +11,12 @@ import {
   StaffSchema,
   StaffUpdateSchema,
 } from '@/lib/validations/staff'
+import type { ActionResult as SharedActionResult } from '@/lib/action-result'
 
-type ActionResult = {
-  success?: boolean
-  error?: string
+type ActionResult = SharedActionResult<{
   staffId?: string
   code?: string
-}
+}>
 
 export async function createStaff(
   eventId: string,
@@ -52,7 +51,7 @@ export async function createStaff(
     },
   })
 
-  revalidatePath(`/dashboard/events/${event.id}`, 'layout')
+  revalidateEvent(event.id)
   return { success: true, staffId: staff.id, code: staff.code }
 }
 
@@ -100,8 +99,7 @@ export async function updateStaff(
     },
   })
 
-  revalidatePath(`/dashboard/events/${staff.eventId}`, 'layout')
-  revalidatePath(`/staff/event/${staff.eventId}`, 'layout')
+  revalidateEvent(staff.eventId)
   return { success: true, staffId: staff.id }
 }
 
@@ -127,7 +125,7 @@ export async function regenerateStaffCode(
     },
   })
 
-  revalidatePath(`/dashboard/events/${staff.eventId}`, 'layout')
+  revalidateEvent(staff.eventId)
   return { success: true, code }
 }
 
@@ -156,6 +154,6 @@ export async function setStaffActive(
     },
   })
 
-  revalidatePath(`/dashboard/events/${staff.eventId}`, 'layout')
+  revalidateEvent(staff.eventId)
   return { success: true }
 }

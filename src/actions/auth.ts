@@ -18,8 +18,10 @@ import {
   isPublicSignupDisabled,
 } from '@/lib/signup'
 import { LoginSchema, RegisterSchema, StaffCodeSchema } from '@/lib/validations/auth'
+import type { ActionResult as SharedActionResult } from '@/lib/action-result'
 
-type ActionResult = { success?: boolean; error?: string }
+// These actions report success or failure only: no extra payload fields.
+type ActionResult = SharedActionResult
 
 const LOGIN_WINDOW_MS = 10 * 60 * 1000
 const OWNER_ATTEMPT_LIMIT = 5

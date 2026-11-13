@@ -1,20 +1,18 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateEvent } from '@/lib/revalidate'
 import { auth } from '@/auth'
 import prisma from '@/lib/prisma'
 import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
-import { requireOwner } from '@/lib/session'
+import { requireOwner, resolveStaff } from '@/lib/session'
 import { getEventForOwner } from '@/lib/queries/events'
-import { getActiveStaff } from '@/lib/queries/staff'
 import { ScheduleItemSchema } from '@/lib/validations/schedule'
+import type { ActionResult as SharedActionResult } from '@/lib/action-result'
 
-type ActionResult = {
-  success?: boolean
-  error?: string
+type ActionResult = SharedActionResult<{
   itemId?: string
   status?: 'PENDING' | 'DONE'
-}
+}>
 
 export async function createScheduleItem(
   eventId: string,
@@ -58,8 +56,7 @@ export async function createScheduleItem(
     },
   })
 
-  revalidatePath(`/dashboard/events/${event.id}`, 'layout')
-  revalidatePath(`/staff/event/${event.id}`, 'layout')
+  revalidateEvent(event.id)
   return { success: true, itemId: item.id }
 }
 
@@ -77,14 +74,8 @@ export async function toggleScheduleItem(
 
   // Authorize before looking the item up, mirroring the guest actions.
   if (user.role === 'STAFF') {
-    if (!user.staffId || !user.eventId) return { error: 'No autorizado' }
-    const staff = await getActiveStaff(
-      user.staffId,
-      user.eventId,
-      user.organizationId,
-      user.staffSessionVersion ?? -1,
-    )
-    if (!staff) return { error: 'Tu acceso está inactivo' }
+    const access = await resolveStaff(user)
+    if (!access.ok) return { error: access.error }
   }
 
   const item = await prisma.scheduleItem.findFirst({
@@ -102,8 +93,7 @@ export async function toggleScheduleItem(
     data: { status },
   })
 
-  revalidatePath(`/dashboard/events/${item.eventId}`, 'layout')
-  revalidatePath(`/staff/event/${item.eventId}`, 'layout')
+  revalidateEvent(item.eventId)
   return { success: true, status }
 }
 
@@ -120,7 +110,6 @@ export async function deleteScheduleItem(
   if (!item) return { error: 'Tarea no encontrada' }
 
   await prisma.scheduleItem.delete({ where: { id: item.id } })
-  revalidatePath(`/dashboard/events/${item.eventId}`, 'layout')
-  revalidatePath(`/staff/event/${item.eventId}`, 'layout')
+  revalidateEvent(item.eventId)
   return { success: true }
 }

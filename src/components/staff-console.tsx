@@ -26,7 +26,7 @@ import {
   type StaffScheduleItem,
 } from "@/components/staff-schedule";
 import { StaffGuestEditor } from "@/components/staff/staff-guest-editor";
-import { NerdGlyph } from "@/components/ui/nerd-glyph";
+import { Brand } from "@/components/ui/brand";
 import { formatTime } from "@/lib/utils";
 
 type Message = { variant: "success" | "danger"; text: string } | null;
@@ -158,12 +158,7 @@ export function StaffConsole({
       <header className="border-b border-stone-800/70 bg-stone-950/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
           <Link href="/" className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-400 text-stone-950">
-              <NerdGlyph name="ticket" className="text-[1.05rem]" />
-            </span>
-            <span className="hidden text-sm font-semibold sm:block">
-              Event-Roll
-            </span>
+            <Brand size="sm" wordmarkClassName="hidden sm:block" />
           </Link>
           <div className="min-w-0 text-center">
             <p className="truncate text-sm font-semibold text-stone-50">
