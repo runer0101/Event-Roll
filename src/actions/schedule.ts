@@ -21,6 +21,10 @@ export async function createScheduleItem(
   input: unknown,
 ): Promise<ActionResult> {
   const owner = await requireOwner()
+  // The demo organization is shared with every visitor: writing to it with the
+  // published credentials would change what the next visitor sees.
+  if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
+
   const event = await getEventForOwner(eventId, owner.organizationId)
   if (!event) return { error: 'Evento no encontrado' }
 
@@ -65,6 +69,10 @@ export async function toggleScheduleItem(
   const session = await auth()
   const user = session?.user
   if (!user) return { error: 'No autorizado' }
+  // The published schedule of the demo is part of what visitors come to see.
+  if (user.role === 'OWNER' && isDemoOwner({ email: user.email ?? '' })) {
+    return { error: DEMO_READ_ONLY_MESSAGE }
+  }
 
   // Authorize before looking the item up, mirroring the guest actions.
   if (user.role === 'STAFF') {

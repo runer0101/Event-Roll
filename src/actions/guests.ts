@@ -10,6 +10,7 @@ import { getActiveStaff } from '@/lib/queries/staff'
 import { guestDedupeKey } from '@/lib/guests'
 import { generateGuestCode, normalizeText } from '@/lib/utils'
 import {
+  GuestIdSchema,
   GuestSchema,
   ImportGuestsSchema,
 } from '@/lib/validations/guests'
@@ -32,6 +33,10 @@ export async function createGuest(
   input: unknown,
 ): Promise<ActionResult> {
   const owner = await requireOwner()
+  // The demo organization is shared with every visitor: writing to it with the
+  // published credentials would change what the next visitor sees.
+  if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
+
   const event = await getEventForOwner(eventId, owner.organizationId)
   if (!event) return { error: 'Evento no encontrado' }
 
@@ -68,6 +73,9 @@ export async function updateGuest(
   const session = await auth()
   const user = session?.user
   if (!user) return { error: 'No autorizado' }
+  if (user.role === 'OWNER' && isDemoOwner({ email: user.email ?? '' })) {
+    return { error: DEMO_READ_ONLY_MESSAGE }
+  }
 
   const parsed = GuestSchema.safeParse(input)
   if (!parsed.success) {
@@ -126,8 +134,11 @@ export async function deleteGuest(guestId: string): Promise<ActionResult> {
   // The demo organization is shared: deleting guests would empty the demo.
   if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
 
+  const parsedId = GuestIdSchema.safeParse(guestId)
+  if (!parsedId.success) return { error: 'Invitado inválido' }
+
   const guest = await prisma.guest.findFirst({
-    where: { id: guestId, organizationId: owner.organizationId },
+    where: { id: parsedId.data, organizationId: owner.organizationId },
   })
   if (!guest) return { error: 'Invitado no encontrado' }
 
@@ -141,6 +152,10 @@ export async function importGuests(
   input: unknown,
 ): Promise<ActionResult> {
   const owner = await requireOwner()
+  // The demo organization is shared with every visitor: an import would rewrite
+  // the published list for everyone.
+  if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
+
   const event = await getEventForOwner(eventId, owner.organizationId)
   if (!event) return { error: 'Evento no encontrado' }
 
@@ -149,52 +164,65 @@ export async function importGuests(
     return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos' }
   }
 
-  const existing = await prisma.guest.findMany({
-    where: { eventId: event.id, organizationId: owner.organizationId },
-    select: { name: true, email: true, phone: true },
-  })
-  const keys = new Set(existing.map(guestDedupeKey))
-  const rows: Array<{
-    organizationId: string
-    eventId: string
-    code: string
-    name: string
-    searchName: string
-    email: string | null
-    phone: string | null
-    category: string | null
-    plusOnes: number
-    table: string | null
-    notes: string | null
-  }> = []
-  let skipped = 0
+  // Reading the stored guests and inserting the new ones inside the same
+  // transaction keeps two overlapping imports of the same file from both
+  // passing the duplicate check: the row lock serializes them per event.
+  const result = await prisma.$transaction(
+    async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "Event" WHERE "id" = ${event.id} FOR UPDATE`
 
-  for (const row of parsed.data.rows) {
-    const key = guestDedupeKey(row)
-    if (keys.has(key)) {
-      skipped += 1
-      continue
-    }
-    keys.add(key)
-    rows.push({
-      organizationId: owner.organizationId,
-      eventId: event.id,
-      code: generateGuestCode(),
-      name: row.name,
-      searchName: normalizeText(row.name),
-      email: optional(row.email),
-      phone: optional(row.phone),
-      category: optional(row.category),
-      plusOnes: row.plusOnes,
-      table: optional(row.table),
-      notes: optional(row.notes),
-    })
-  }
+      const existing = await tx.guest.findMany({
+        where: { eventId: event.id, organizationId: owner.organizationId },
+        select: { name: true, email: true, phone: true },
+      })
+      const keys = new Set(existing.map(guestDedupeKey))
+      const rows: Array<{
+        organizationId: string
+        eventId: string
+        code: string
+        name: string
+        searchName: string
+        email: string | null
+        phone: string | null
+        category: string | null
+        plusOnes: number
+        table: string | null
+        notes: string | null
+      }> = []
+      let skipped = 0
 
-  if (rows.length > 0) {
-    await prisma.guest.createMany({ data: rows })
-  }
+      for (const row of parsed.data.rows) {
+        const key = guestDedupeKey(row)
+        if (keys.has(key)) {
+          skipped += 1
+          continue
+        }
+        keys.add(key)
+        rows.push({
+          organizationId: owner.organizationId,
+          eventId: event.id,
+          code: generateGuestCode(),
+          name: row.name,
+          searchName: normalizeText(row.name),
+          email: optional(row.email),
+          phone: optional(row.phone),
+          category: optional(row.category),
+          plusOnes: row.plusOnes,
+          table: optional(row.table),
+          notes: optional(row.notes),
+        })
+      }
+
+      if (rows.length > 0) {
+        await tx.guest.createMany({ data: rows })
+      }
+
+      return { imported: rows.length, skipped }
+    },
+    // A second import waits on the row lock instead of failing on timeout.
+    { timeout: 15_000 },
+  )
 
   revalidatePath(`/dashboard/events/${event.id}`, 'layout')
-  return { success: true, imported: rows.length, skipped }
+  return { success: true, imported: result.imported, skipped: result.skipped }
 }
