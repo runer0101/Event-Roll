@@ -12,7 +12,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { NerdGlyph } from "@/components/ui/nerd-glyph";
 import { StatCard } from "@/components/ui/stat-card";
-import { getEventsForOwner } from "@/lib/queries/events";
+import { getEventsForOwner, progressRate } from "@/lib/queries/events";
 import { requireOwner } from "@/lib/session";
 import { formatDate } from "@/lib/utils";
 
@@ -96,10 +96,9 @@ export default async function DashboardPage() {
       ) : (
         <div className="grid gap-5 lg:grid-cols-2">
           {events.map((event) => {
-            const rate =
-              event._count.guests === 0
-                ? 0
-                : Math.round((event.checkedIn / event._count.guests) * 100);
+            // Same denominator as the live panel and the guard counters:
+            // cancelled invitations are not part of the progress.
+            const rate = progressRate(event.checkedIn, event.countedGuests);
             return (
               <Card
                 key={event.id}
@@ -140,7 +139,7 @@ export default async function DashboardPage() {
                 <div className="mt-5">
                   <div className="flex items-center justify-between text-xs text-stone-400">
                     <span>
-                      {event.checkedIn} de {event._count.guests} dentro
+                      {event.checkedIn} de {event.countedGuests} dentro
                     </span>
                     <span className="font-medium text-stone-200">{rate}%</span>
                   </div>

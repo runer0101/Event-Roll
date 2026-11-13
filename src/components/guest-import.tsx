@@ -20,6 +20,7 @@ export function GuestImport({ eventId }: { eventId: string }) {
   const [parsed, setParsed] = useState<ParsedGuests | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [pending, startTransition] = useTransition();
 
   function reset() {
@@ -43,23 +44,30 @@ export function GuestImport({ eventId }: { eventId: string }) {
   }
 
   function handleImport() {
-    if (!parsed?.rows.length) return;
+    // The transition flag only flips after React re-renders, so a fast double
+    // click could start two imports. This guard is synchronous.
+    if (submitting || !parsed?.rows.length) return;
+    const rows = parsed.rows;
+    setSubmitting(true);
     setError(null);
     startTransition(async () => {
-      const response = await importGuests(eventId, {
-        eventId,
-        rows: parsed.rows,
-      });
-      if (response?.error) {
-        setError(response.error);
-        return;
+      try {
+        const response = await importGuests(eventId, { eventId, rows });
+        if (response?.error) {
+          setError(response.error);
+          return;
+        }
+        setResult(
+          `${response.imported ?? 0} invitados importados${
+            response.skipped ? ` · ${response.skipped} duplicados omitidos` : ""
+          }.`,
+        );
+        router.refresh();
+      } catch {
+        setError("No pudimos importar la lista. Inténtalo de nuevo.");
+      } finally {
+        setSubmitting(false);
       }
-      setResult(
-        `${response.imported ?? 0} invitados importados${
-          response.skipped ? ` · ${response.skipped} duplicados omitidos` : ""
-        }.`,
-      );
-      router.refresh();
     });
   }
 
@@ -121,6 +129,7 @@ export function GuestImport({ eventId }: { eventId: string }) {
                   type="file"
                   accept=".xlsx,.csv"
                   className="sr-only"
+                  disabled={submitting}
                   onChange={(event) => void handleFile(event.target.files?.[0])}
                 />
               </label>
@@ -198,7 +207,7 @@ export function GuestImport({ eventId }: { eventId: string }) {
                 </Button>
                 <Button
                   onClick={handleImport}
-                  disabled={pending || !parsed?.rows.length}
+                  disabled={submitting || pending || !parsed?.rows.length}
                 >
                   {pending
                     ? "Importando…"
