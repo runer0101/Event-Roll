@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { KeyRound, ShieldCheck, Users } from "lucide-react";
-import { StaffCard, StaffCreateDialog } from "@/components/staff-manager";
+import { StaffCard } from "@/components/staff/staff-card";
+import { StaffCreateDialog } from "@/components/staff/staff-create-dialog";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getEventForOwner } from "@/lib/queries/events";
