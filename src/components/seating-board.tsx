@@ -38,6 +38,13 @@ type TableView = {
 export function SeatingBoard({ initial }: { initial: TableView[] }) {
   const router = useRouter();
   const [tables, setTables] = useState(initial);
+  // `useState(initial)` alone would ignore a refreshed server prop, so a table
+  // created in the form above only showed up after a full reload.
+  const [syncedInitial, setSyncedInitial] = useState(initial);
+  if (syncedInitial !== initial) {
+    setSyncedInitial(initial);
+    setTables(initial);
+  }
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -47,41 +54,37 @@ export function SeatingBoard({ initial }: { initial: TableView[] }) {
     0,
   );
 
-  function toggle(tableId: string, chair: ChairView) {
-    setError(null);
-    const next = !chair.occupied;
+  function setChair(tableId: string, chairId: string, occupied: boolean) {
     setTables((current) =>
       current.map((table) =>
         table.id === tableId
           ? {
               ...table,
               chairs: table.chairs.map((item) =>
-                item.id === chair.id ? { ...item, occupied: next } : item,
+                item.id === chairId ? { ...item, occupied } : item,
               ),
             }
           : table,
       ),
     );
+  }
+
+  function toggle(tableId: string, chair: ChairView) {
+    setError(null);
+    // Optimistic, but only until the action answers with the stored value.
+    setChair(tableId, chair.id, !chair.occupied);
 
     startTransition(async () => {
       const result = await toggleChair(chair.id);
       if (result?.error) {
         setError(result.error);
-        setTables((current) =>
-          current.map((table) =>
-            table.id === tableId
-              ? {
-                  ...table,
-                  chairs: table.chairs.map((item) =>
-                    item.id === chair.id
-                      ? { ...item, occupied: chair.occupied }
-                      : item,
-                  ),
-                }
-              : table,
-          ),
-        );
+        setChair(tableId, chair.id, chair.occupied);
         return;
+      }
+      // The action decides: a second click or another tab may have moved the
+      // chair since this one was rendered, so its answer wins over the guess.
+      if (typeof result?.occupied === "boolean") {
+        setChair(tableId, chair.id, result.occupied);
       }
       router.refresh();
     });
@@ -109,6 +112,7 @@ export function SeatingBoard({ initial }: { initial: TableView[] }) {
 
   function reset(table: TableView) {
     setError(null);
+    const previous = table.chairs;
     setTables((current) =>
       current.map((item) =>
         item.id === table.id
@@ -126,6 +130,14 @@ export function SeatingBoard({ initial }: { initial: TableView[] }) {
       const result = await resetTable(table.id);
       if (result?.error) {
         setError(result.error);
+        // Same rollback the chair toggle does: the board must not keep a
+        // "todas libres" state the server refused to store.
+        setTables((current) =>
+          current.map((item) =>
+            item.id === table.id ? { ...item, chairs: previous } : item,
+          ),
+        );
+        return;
       }
       router.refresh();
     });

@@ -1,12 +1,17 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 import prisma from '@/lib/prisma'
 import { Prisma } from '@/generated/prisma/client'
 import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
 import { requireOwner } from '@/lib/session'
 import { getEventForOwner } from '@/lib/queries/events'
 import { TableSchema } from '@/lib/validations/tables'
+
+// A server action receives anything at runtime, so an id arrives as whatever
+// the caller sent; the same shape as the guest id schema keeps it bounded.
+const ChairIdSchema = z.string().trim().min(1).max(64)
 
 type ActionResult = {
   success?: boolean
@@ -20,6 +25,9 @@ export async function createTable(
   input: unknown,
 ): Promise<ActionResult> {
   const owner = await requireOwner()
+  // The demo organization is shared: its floor plan must survive the visitors.
+  if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
+
   const event = await getEventForOwner(eventId, owner.organizationId)
   if (!event) return { error: 'Evento no encontrado' }
 
@@ -77,18 +85,40 @@ export async function deleteTable(
 
 export async function toggleChair(chairId: string): Promise<ActionResult> {
   const owner = await requireOwner()
+  const parsedId = ChairIdSchema.safeParse(chairId)
+  // One message for every malformed id: the caller gets a handled error, never
+  // the TypeError or Prisma failure a raw value used to cause.
+  if (!parsedId.success) return { error: 'Silla inválida' }
+
   const chair = await prisma.chair.findFirst({
-    where: { id: chairId, organizationId: owner.organizationId },
+    where: { id: parsedId.data, organizationId: owner.organizationId },
+    select: { id: true, eventId: true, occupied: true },
   })
   if (!chair) return { error: 'Silla no encontrada' }
 
+  // Compare-and-set: the write only lands on the state this click saw, so a
+  // second click or another tab cannot flip the chair twice from one stale
+  // read. Zero rows changed means someone else won that race.
   const occupied = !chair.occupied
-  await prisma.chair.update({
-    where: { id: chair.id },
+  const changed = await prisma.chair.updateMany({
+    where: {
+      id: chair.id,
+      organizationId: owner.organizationId,
+      occupied: chair.occupied,
+    },
     data: { occupied },
   })
   revalidatePath(`/dashboard/events/${chair.eventId}`, 'layout')
-  return { success: true, occupied }
+
+  if (changed.count > 0) return { success: true, occupied }
+
+  // Converge on what the chair actually holds now instead of guessing.
+  const current = await prisma.chair.findFirst({
+    where: { id: chair.id, organizationId: owner.organizationId },
+    select: { occupied: true },
+  })
+  if (!current) return { error: 'Silla no encontrada' }
+  return { success: true, occupied: current.occupied }
 }
 
 export async function resetTable(tableId: string): Promise<ActionResult> {
