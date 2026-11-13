@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { registerOrganizer } from './helpers'
+import { eventHref, registerOrganizer } from './helpers'
 
 test('clicking every chair marks the table as full and red', async ({
   page,
@@ -17,10 +17,15 @@ test('clicking every chair marks the table as full and red', async ({
   await page.fill('#date', '2027-12-31T20:00')
   await page.fill('#location', 'Sala de pruebas')
   await page.getByRole('button', { name: 'Crear evento' }).click()
-  await page.waitForURL('**/dashboard/events/**')
-  const eventUrl = page.url().replace(/\/$/, '')
+  // Wait for the new event's own heading: the URL pattern also matches
+  // /dashboard/events/new, which is where the form still is.
+  await expect(
+    page.getByRole('heading', { name: `Evento ${stamp}` }),
+  ).toBeVisible()
 
-  await page.goto(`${eventUrl}/tables`)
+  await page.goto('/dashboard')
+  const eventLink = await eventHref(page, `Evento ${stamp}`)
+  await page.goto(`${eventLink}/tables`)
   await page.fill('#table-name', table)
   await page.fill('#table-capacity', '4')
   await page.getByRole('button', { name: 'Crear mesa' }).click()
