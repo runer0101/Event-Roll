@@ -59,6 +59,9 @@ describe('the demo organization is read-only for every destructive action', () =
     const result = await toggleChair('c1')
 
     expect(result.error).toBe(DEMO_READ_ONLY_MESSAGE)
+    // The guard runs before the read too: a visitor must not learn which chair
+    // ids exist, and a write attempt must never reach the database.
+    expect(mocks.chairFindFirst).not.toHaveBeenCalled()
     expect(mocks.chairUpdateMany).not.toHaveBeenCalled()
   })
 
