@@ -1,3 +1,7 @@
+overrides:
+  # minimatch < 11.0.1 has a ReDoS advisory; eslint pulls a copy of it.
+  "minimatch@>=7.0.0 <11.0.1": 11.0.1
+
 allowBuilds:
   '@prisma/client': true
   '@prisma/engines': true
