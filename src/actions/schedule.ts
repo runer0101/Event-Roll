@@ -4,9 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { auth } from '@/auth'
 import prisma from '@/lib/prisma'
 import { DEMO_READ_ONLY_MESSAGE, isDemoOwner } from '@/lib/demo'
-import { requireOwner } from '@/lib/session'
+import { requireOwner, resolveStaff } from '@/lib/session'
 import { getEventForOwner } from '@/lib/queries/events'
-import { getActiveStaff } from '@/lib/queries/staff'
 import { ScheduleItemSchema } from '@/lib/validations/schedule'
 
 type ActionResult = {
@@ -77,14 +76,8 @@ export async function toggleScheduleItem(
 
   // Authorize before looking the item up, mirroring the guest actions.
   if (user.role === 'STAFF') {
-    if (!user.staffId || !user.eventId) return { error: 'No autorizado' }
-    const staff = await getActiveStaff(
-      user.staffId,
-      user.eventId,
-      user.organizationId,
-      user.staffSessionVersion ?? -1,
-    )
-    if (!staff) return { error: 'Tu acceso está inactivo' }
+    const access = await resolveStaff(user)
+    if (!access.ok) return { error: access.error }
   }
 
   const item = await prisma.scheduleItem.findFirst({
