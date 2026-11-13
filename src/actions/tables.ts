@@ -85,6 +85,9 @@ export async function deleteTable(
 
 export async function toggleChair(chairId: string): Promise<ActionResult> {
   const owner = await requireOwner()
+  // The demo organization is shared: its floor plan must survive the visitors.
+  if (isDemoOwner(owner)) return { error: DEMO_READ_ONLY_MESSAGE }
+
   const parsedId = ChairIdSchema.safeParse(chairId)
   // One message for every malformed id: the caller gets a handled error, never
   // the TypeError or Prisma failure a raw value used to cause.
