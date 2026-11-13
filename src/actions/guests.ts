@@ -73,7 +73,9 @@ export async function updateGuest(
   const session = await auth()
   const user = session?.user
   if (!user) return { error: 'No autorizado' }
-  if (user.role === 'OWNER' && isDemoOwner({ email: user.email ?? '' })) {
+  // Not only the owner: the seed also publishes a coordinating staff code,
+  // so a demo staff session must be refused just the same.
+  if (isDemoOwner({ email: user.email ?? '' })) {
     return { error: DEMO_READ_ONLY_MESSAGE }
   }
 
