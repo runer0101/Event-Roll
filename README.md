@@ -184,9 +184,19 @@ The assistant screen is at `/staff`. The organizer panel is at `/dashboard`.
 
 ## Testing
 
-- **Unit (Vitest, 29 tests)** — dedupe keys, permission defaults and copying, code generation, text normalization, timezone conversion, CSV escaping, server-side door authorization (including the `canCheckIn` flag and closed events) and login throttling.
-- **End-to-end (Playwright, 9 tests)** — organizer login, assistant login by code, guest check-in seen live by the organizer, contact permission, forbidden export for an assistant, cross-event export rejection, CSV import with preview, event creation, table filling (all chairs red), role-specific schedules, and the screenshot suite.
-- **CI (GitHub Actions)** — install → Prisma generate → typecheck → lint → unit tests → build, plus a second job with PostgreSQL 18 that applies migrations and runs the e2e suite.
+- **Unit (Vitest, 31 files / 142 tests)** — dedupe keys, permission defaults and copying, code generation, text normalization, timezone conversion, CSV escaping, server-side door authorization (including the `canCheckIn` flag and closed events), login throttling, the public-signup switch and the theme preference rule.
+- **End-to-end (Playwright, 11 tests)** — organizer login, assistant login by code, guest check-in seen live by the organizer, contact permission, forbidden export for an assistant, cross-event export rejection, CSV import with preview, event creation, table filling (all chairs red), role-specific schedules, the theme toggle (icon, flip and persistence) and the screenshot suite.
+- **CI (GitHub Actions)** — install → Prisma generate → typecheck → lint → unit tests → build, plus a second job with PostgreSQL 18 that applies migrations, runs the e2e suite and uploads the regenerated screenshots as an artifact. A third job audits production dependencies on a weekly schedule, which is how this repository keeps dependency alerts without Dependabot opening pull requests.
+
+The end-to-end suite needs a seeded database. If the local development credentials are not usable, the CI setup reproduces it in one container:
+
+```bash
+docker run -d --rm --name eventroll-db -p 5433:5432 \
+  -e POSTGRES_USER=eventroll -e POSTGRES_PASSWORD=eventroll -e POSTGRES_DB=event_roll postgres:18
+export DATABASE_URL='postgresql://eventroll:eventroll@localhost:5433/event_roll?schema=public'
+pnpm exec prisma migrate deploy && pnpm test:e2e
+docker rm -f eventroll-db
+```
 
 ## Demo scope
 
