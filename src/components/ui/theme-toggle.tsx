@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { Moon, Sun } from "lucide-react";
 import { resolveTheme, THEME_STORAGE_KEY, type Theme } from "@/lib/theme";
 
 function storedTheme(): string | null {
@@ -63,20 +64,24 @@ export function ThemeToggle({ className }: { className?: string }) {
     }
   }
 
+  const goingTo = theme === "dark" ? "claro" : "oscuro";
+
   return (
     <button
       type="button"
       onClick={toggle}
-      aria-label={
-        theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"
-      }
-      title={theme === "dark" ? "Modo claro" : "Modo oscuro"}
+      aria-label={`Cambiar a modo ${goingTo}`}
+      title={`Modo ${goingTo}`}
       className={
         className ??
-        "inline-flex h-9 items-center rounded-sm border border-stone-800 px-3 font-mono text-[10px] uppercase tracking-[0.16em] text-stone-400 transition hover:border-stone-600 hover:text-stone-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+        "inline-flex h-9 w-9 items-center justify-center rounded-sm border border-stone-800 text-stone-400 transition hover:border-stone-600 hover:text-stone-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950"
       }
     >
-      {theme === "dark" ? "Claro" : "Oscuro"}
+      {theme === "dark" ? (
+        <Sun key="sun" className="data-pop h-4 w-4" aria-hidden />
+      ) : (
+        <Moon key="moon" className="data-pop h-4 w-4" aria-hidden />
+      )}
     </button>
   );
 }
