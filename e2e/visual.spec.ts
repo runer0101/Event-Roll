@@ -1,6 +1,11 @@
 import { test } from '@playwright/test'
 import { eventHref, loginOrganizer, loginStaff } from './helpers'
 
+// Chromium reports a light system preference unless a spec says otherwise, and
+// these images illustrate the ink register the site defaults to. Pin it so a
+// CI runner's defaults never flip the whole gallery to paper.
+test.use({ colorScheme: 'dark' })
+
 test('captures the presentation screenshots', async ({ page, browser }) => {
   await page.goto('/')
   // Wait for hydration to install the reveal observer, then walk the page so
