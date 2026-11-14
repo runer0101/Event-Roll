@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Dependabot is deliberately off in this repository, so the audit runs on a
+  # schedule of its own instead of opening pull requests.
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -75,3 +80,30 @@ jobs:
       - run: pnpm exec prisma migrate deploy
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
+
+      # The visual spec rewrites docs/screenshots. Keep the result so the
+      # gallery can be refreshed from a run instead of a local database.
+      - name: Keep the regenerated screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: docs/screenshots
+          retention-days: 14
+
+  audit:
+    name: Dependency audit
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm audit --prod --audit-level=high
