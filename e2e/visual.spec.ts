@@ -1,6 +1,11 @@
 import { test } from '@playwright/test'
 import { eventHref, loginOrganizer, loginStaff } from './helpers'
 
+// Chromium reports a light system preference unless a spec says otherwise, and
+// these images illustrate the ink register the site defaults to. Pin it so a
+// CI runner's defaults never flip the whole gallery to paper.
+test.use({ colorScheme: 'dark' })
+
 test('captures the presentation screenshots', async ({ page, browser }) => {
   await page.goto('/')
   // Wait for hydration to install the reveal observer, then walk the page so
@@ -75,11 +80,11 @@ test('captures the presentation screenshots', async ({ page, browser }) => {
   const staff = await browser.newContext({
     viewport: { width: 390, height: 844 },
   })
-  const guard = await staff.newPage()
-  await loginStaff(guard)
-  await guard.waitForTimeout(500)
-  await guard.screenshot({
-    path: 'docs/screenshots/guard.png',
+  const door = await staff.newPage()
+  await loginStaff(door)
+  await door.waitForTimeout(500)
+  await door.screenshot({
+    path: 'docs/screenshots/assistant.png',
     fullPage: true,
   })
   await staff.close()
