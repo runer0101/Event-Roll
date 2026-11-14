@@ -75,11 +75,11 @@ test('captures the presentation screenshots', async ({ page, browser }) => {
   const staff = await browser.newContext({
     viewport: { width: 390, height: 844 },
   })
-  const guard = await staff.newPage()
-  await loginStaff(guard)
-  await guard.waitForTimeout(500)
-  await guard.screenshot({
-    path: 'docs/screenshots/guard.png',
+  const door = await staff.newPage()
+  await loginStaff(door)
+  await door.waitForTimeout(500)
+  await door.screenshot({
+    path: 'docs/screenshots/assistant.png',
     fullPage: true,
   })
   await staff.close()

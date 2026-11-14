@@ -61,7 +61,7 @@ Event-Roll turns that into one live system:
 | **Schedule** | **Staff and roles** |
 | ![Schedule](docs/screenshots/schedule.png) | ![Staff](docs/screenshots/staff.png) |
 | **Assistant screen (mobile)** | **Kitchen schedule (mobile)** |
-| ![Assistant](docs/screenshots/guard.png) | ![Kitchen](docs/screenshots/staff-cook.png) |
+| ![Assistant](docs/screenshots/assistant.png) | ![Kitchen](docs/screenshots/staff-cook.png) |
 | **Landing** | |
 | ![Landing](docs/screenshots/landing.png) | |
 
